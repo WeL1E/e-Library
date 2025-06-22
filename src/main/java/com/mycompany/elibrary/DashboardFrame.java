@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -30,10 +29,11 @@ public class DashboardFrame extends javax.swing.JFrame {
     public DashboardFrame() {
         setUndecorated(false);
         initComponents();
+        
+        styleLabelInfo(lblTotalBuku, lblWaktu);
+        
         tampilkanTotalBuku();
-        // label total buku
-        lblTotalBuku.setFont(new Font("Segoe UI", Font.BOLD, 14));
-
+        
         // setting font
         JButton[] semuaButton = {
             btnScan,
@@ -53,9 +53,14 @@ public class DashboardFrame extends javax.swing.JFrame {
         setResizable(false);
         MainPanel.setLayout(new CardLayout());
         
-        lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 14));
         Timer timer = new Timer(1000, e -> lblWaktu.setText(WaktuFormatter.now()));
         timer.start();
+    }
+    
+    private void styleLabelInfo(JLabel target, JLabel referensi){
+        target.setFont(referensi.getFont());
+        target.setForeground(referensi.getForeground());
+        target.setBorder(referensi.getBorder());
     }
     
     private void tampilkanTotalBuku(){
@@ -205,11 +210,11 @@ public class DashboardFrame extends javax.swing.JFrame {
         );
         PanelInfoAtasLayout.setVerticalGroup(
             PanelInfoAtasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelInfoAtasLayout.createSequentialGroup()
-                .addGap(0, 8, Short.MAX_VALUE)
+            .addGroup(PanelInfoAtasLayout.createSequentialGroup()
                 .addGroup(PanelInfoAtasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTotalBuku)
-                    .addComponent(lblWaktu)))
+                    .addComponent(lblWaktu))
+                .addGap(0, 8, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -283,10 +288,6 @@ public class DashboardFrame extends javax.swing.JFrame {
         
         lblTotalBuku.setVisible(true);
         tampilkanTotalBuku();
-        lblTotalBuku.revalidate();
-        lblTotalBuku.repaint();
-        PanelInfoAtas.revalidate();
-        PanelInfoAtas.repaint();
     }//GEN-LAST:event_btnManajemenBukuActionPerformed
 
     private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
@@ -295,6 +296,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.add(new AktivitasPanel());
         MainPanel.revalidate();
         MainPanel.repaint();
+        
         lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnAktivitasActionPerformed
 
