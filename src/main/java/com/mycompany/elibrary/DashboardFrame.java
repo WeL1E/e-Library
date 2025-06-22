@@ -4,12 +4,21 @@
  */
 package com.mycompany.elibrary;
 
+import java.awt.CardLayout;
+import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -25,20 +34,56 @@ public class DashboardFrame extends javax.swing.JFrame {
     public DashboardFrame() {
         setUndecorated(false);
         initComponents();
+        tampikanTotalBuku();
+        // label total buku
+        lblTotalBuku = new JLabel("Total Buku: ...");
+        lblTotalBuku.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        lblTotalBuku.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // setting font
+        JButton[] semuaButton = {
+            btnScan,
+            btnManajemenBuku,
+            btnManajemenMahasiswa,
+            btnTransaksi,
+            btnCariBuku,
+            btnLogout
+        };
+        
+        for(JButton btn : semuaButton){
+            btn.setFont(new Font("Segoe UI", Font.BOLD,14));
+        }
+        
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setTitle("e - library | Dashboard");
         setResizable(false);
+        MainPanel.setLayout(new CardLayout());
         
+        lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 14));
         Timer timer = new Timer(1000, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss | dd-MM-yyyy");
                 String waktuSekarang = LocalDateTime.now().format(formatter);
                 lblWaktu.setText(waktuSekarang);
-                lblWaktu.setFont(new java.awt.Font("Segoe UI", java.awt.Font.PLAIN, getWidth() / 100));
             }
         });
         timer.start();
+    }
+    
+    private void tampikanTotalBuku(){
+        try (Connection conn = DBConnection.connect()){
+            String sql = "SELECT COUNT(*) FROM buku";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()){
+                int total = rs.getInt(1);
+                lblTotalBuku.setText("Total Buku: " + total);
+            }
+        }catch (SQLException e){
+            lblTotalBuku.setText("Gagal memuat data buku");
+            System.err.println("Error: " + e.getMessage());
+        }
     }
 
     /**
@@ -57,13 +102,20 @@ public class DashboardFrame extends javax.swing.JFrame {
         btnCariBuku = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
         btnScan = new javax.swing.JButton();
+        MainPanel = new javax.swing.JPanel();
         lblWaktu = new javax.swing.JLabel();
+        lblTotalBuku = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         btnManajemenBuku.setText("Manajemen Buku");
+        btnManajemenBuku.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnManajemenBukuActionPerformed(evt);
+            }
+        });
 
         btnManajemenMahasiswa.setText("Manajemen Mahasiswa");
         btnManajemenMahasiswa.addActionListener(new java.awt.event.ActionListener() {
@@ -130,10 +182,23 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addComponent(btnCariBuku)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnLogout)
-                .addContainerGap(84, Short.MAX_VALUE))
+                .addContainerGap(31, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout MainPanelLayout = new javax.swing.GroupLayout(MainPanel);
+        MainPanel.setLayout(MainPanelLayout);
+        MainPanelLayout.setHorizontalGroup(
+            MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        MainPanelLayout.setVerticalGroup(
+            MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         lblWaktu.setText("Time");
+
+        lblTotalBuku.setText("TB");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -142,19 +207,26 @@ public class DashboardFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 132, Short.MAX_VALUE)
-                .addComponent(lblWaktu, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblTotalBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(225, 225, 225)
+                        .addComponent(lblWaktu))
+                    .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(lblTotalBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblWaktu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(8, 8, 8)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblWaktu)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -195,6 +267,14 @@ public class DashboardFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnLogoutActionPerformed
 
+    private void btnManajemenBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenBukuActionPerformed
+        // TODO add your handling code here:
+        MainPanel.removeAll();
+        MainPanel.add(new ManajemenBukuPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
+    }//GEN-LAST:event_btnManajemenBukuActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -231,6 +311,7 @@ public class DashboardFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel MainPanel;
     private javax.swing.JButton btnCariBuku;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnManajemenBuku;
@@ -238,6 +319,7 @@ public class DashboardFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnScan;
     private javax.swing.JButton btnTransaksi;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblTotalBuku;
     private javax.swing.JLabel lblWaktu;
     // End of variables declaration//GEN-END:variables
 }
