@@ -43,9 +43,9 @@ public class DashboardFrame extends javax.swing.JFrame {
         // setting font
         JButton[] semuaButton = {
             btnScan,
+            btnAktivitas,
             btnManajemenBuku,
-            btnManajemenMahasiswa,
-            btnTransaksi,
+            btnTransaksi, // pinjam & kembali
             btnCariBuku,
             btnLogout
         };
@@ -60,14 +60,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.setLayout(new CardLayout());
         
         lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        Timer timer = new Timer(1000, new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e){
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss | dd-MM-yyyy");
-                String waktuSekarang = LocalDateTime.now().format(formatter);
-                lblWaktu.setText(waktuSekarang);
-            }
-        });
+        Timer timer = new Timer(1000, e -> lblWaktu.setText(WaktuFormatter.now()));
         timer.start();
     }
     
@@ -96,12 +89,12 @@ public class DashboardFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        btnManajemenBuku = new javax.swing.JButton();
-        btnManajemenMahasiswa = new javax.swing.JButton();
+        btnAktivitas = new javax.swing.JButton();
         btnTransaksi = new javax.swing.JButton();
         btnCariBuku = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
         btnScan = new javax.swing.JButton();
+        btnManajemenBuku = new javax.swing.JButton();
         MainPanel = new javax.swing.JPanel();
         lblWaktu = new javax.swing.JLabel();
         lblTotalBuku = new javax.swing.JLabel();
@@ -110,17 +103,10 @@ public class DashboardFrame extends javax.swing.JFrame {
 
         jPanel1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
-        btnManajemenBuku.setText("Manajemen Buku");
-        btnManajemenBuku.addActionListener(new java.awt.event.ActionListener() {
+        btnAktivitas.setText("Aktivitas");
+        btnAktivitas.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnManajemenBukuActionPerformed(evt);
-            }
-        });
-
-        btnManajemenMahasiswa.setText("Manajemen Mahasiswa");
-        btnManajemenMahasiswa.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnManajemenMahasiswaActionPerformed(evt);
+                btnAktivitasActionPerformed(evt);
             }
         });
 
@@ -152,20 +138,30 @@ public class DashboardFrame extends javax.swing.JFrame {
             }
         });
 
+        btnManajemenBuku.setText("Manajemen Buku");
+        btnManajemenBuku.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnManajemenBukuActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnManajemenMahasiswa, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnManajemenBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnTransaksi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnCariBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnLogout, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnScan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnAktivitas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnTransaksi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnCariBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnLogout, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnScan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btnManajemenBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -173,9 +169,9 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(btnScan)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnManajemenBuku)
+                .addComponent(btnAktivitas)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnManajemenMahasiswa)
+                .addComponent(btnManajemenBuku)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnTransaksi)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -189,11 +185,11 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.setLayout(MainPanelLayout);
         MainPanelLayout.setHorizontalGroup(
             MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 294, Short.MAX_VALUE)
         );
         MainPanelLayout.setVerticalGroup(
             MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 235, Short.MAX_VALUE)
         );
 
         lblWaktu.setText("Time");
@@ -241,10 +237,6 @@ public class DashboardFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnTransaksiActionPerformed
 
-    private void btnManajemenMahasiswaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenMahasiswaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnManajemenMahasiswaActionPerformed
-
     private void btnScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanActionPerformed
         // TODO add your handling code here:
         new ScannerDialog(this);
@@ -274,6 +266,16 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.revalidate();
         MainPanel.repaint();
     }//GEN-LAST:event_btnManajemenBukuActionPerformed
+
+    private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
+        // TODO add your handling code here:
+        btnAktivitas.addActionListener(e -> {
+            MainPanel.removeAll();
+            MainPanel.add(new AktivitasPanel());
+            MainPanel.revalidate();
+            MainPanel.repaint();
+        });
+    }//GEN-LAST:event_btnAktivitasActionPerformed
 
     /**
      * @param args the command line arguments
@@ -312,10 +314,10 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel MainPanel;
+    private javax.swing.JButton btnAktivitas;
     private javax.swing.JButton btnCariBuku;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnManajemenBuku;
-    private javax.swing.JButton btnManajemenMahasiswa;
     private javax.swing.JButton btnScan;
     private javax.swing.JButton btnTransaksi;
     private javax.swing.JPanel jPanel1;

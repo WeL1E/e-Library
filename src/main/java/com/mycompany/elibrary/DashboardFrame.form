@@ -72,15 +72,20 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="btnManajemenMahasiswa" alignment="0" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                              <Component id="btnAktivitas" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnTransaksi" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnCariBuku" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnLogout" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnScan" alignment="0" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      </Group>
                       <Component id="btnManajemenBuku" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnTransaksi" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnCariBuku" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnLogout" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnScan" alignment="0" max="32767" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -90,9 +95,9 @@
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Component id="btnScan" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btnManajemenBuku" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnAktivitas" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btnManajemenMahasiswa" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnManajemenBuku" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnTransaksi" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -105,20 +110,12 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JButton" name="btnManajemenBuku">
+        <Component class="javax.swing.JButton" name="btnAktivitas">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Manajemen Buku"/>
+            <Property name="text" type="java.lang.String" value="Aktivitas"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnManajemenBukuActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="btnManajemenMahasiswa">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Manajemen Mahasiswa"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnManajemenMahasiswaActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAktivitasActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnTransaksi">
@@ -153,6 +150,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnScanActionPerformed"/>
           </Events>
         </Component>
+        <Component class="javax.swing.JButton" name="btnManajemenBuku">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Manajemen Buku"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnManajemenBukuActionPerformed"/>
+          </Events>
+        </Component>
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="MainPanel">
@@ -160,12 +165,12 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="294" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="235" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
