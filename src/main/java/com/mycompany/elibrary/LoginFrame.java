@@ -141,7 +141,8 @@ public class LoginFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Login Berhasil!");
                 
                 this.dispose();
-                new DashboardFrame().setVisible(true);
+                DashboardFrame dash = new DashboardFrame("AKTIVITAS");
+                dash.setVisible(true);
             }else {
                 JOptionPane.showMessageDialog(this, "Username atau Password salah!", "Login Gagal", JOptionPane.ERROR_MESSAGE);
             }

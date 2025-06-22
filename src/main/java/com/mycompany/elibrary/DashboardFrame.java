@@ -5,6 +5,7 @@
 package com.mycompany.elibrary;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.Timer;
@@ -22,14 +23,19 @@ import javax.swing.SwingUtilities;
  * @author aldor
  */
 public class DashboardFrame extends javax.swing.JFrame {
+    public DashboardFrame(){
+        this("DASHBOARD");
+    }
 
     /**
      * Creates new form DashboardFrame
      */
-    public DashboardFrame() {
+    public DashboardFrame(String halamanAwal) {
         setUndecorated(false);
         initComponents();
         
+        lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblWaktu.setForeground(new Color(30, 30, 30));
         styleLabelInfo(lblTotalBuku, lblWaktu);
         
         tampilkanTotalBuku();
@@ -45,7 +51,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         };
         
         for(JButton btn : semuaButton){
-            btn.setFont(new Font("Segoe UI", Font.BOLD,14));
+            btn.setFont(new Font("Segoe UI", Font.BOLD,16));
         }
         
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -55,6 +61,19 @@ public class DashboardFrame extends javax.swing.JFrame {
         
         Timer timer = new Timer(1000, e -> lblWaktu.setText(WaktuFormatter.now()));
         timer.start();
+        
+        if(halamanAwal.equalsIgnoreCase("AKTIVITAS")){
+            tampilkanAktivitas();
+        }
+    }
+    
+    private void tampilkanAktivitas(){
+        MainPanel.removeAll();
+        MainPanel.add(new AktivitasPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
+        
+        lblTotalBuku.setVisible(false);
     }
     
     private void styleLabelInfo(JLabel target, JLabel referensi){
@@ -292,6 +311,7 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
         // TODO add your handling code here:
+        tampilkanAktivitas();
         MainPanel.removeAll();
         MainPanel.add(new AktivitasPanel());
         MainPanel.revalidate();

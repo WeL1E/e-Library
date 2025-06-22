@@ -59,7 +59,7 @@ public class AktivitasPanel extends JPanel {
 
             // 🔧 Terapkan styling dari TabelStyler
             TabelStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 24);
-            TabelStyler.setCenterAlignment(tabelAktivitas, 3, 4); // waktu_masuk & keluar
+            TabelStyler.setCenterAlignment(tabelAktivitas,0, 3, 4); // waktu_masuk & keluar
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data aktivitas: " + e.getMessage());
