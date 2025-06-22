@@ -8,14 +8,10 @@ import java.awt.CardLayout;
 import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.Timer;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -34,11 +30,9 @@ public class DashboardFrame extends javax.swing.JFrame {
     public DashboardFrame() {
         setUndecorated(false);
         initComponents();
-        tampikanTotalBuku();
+        tampilkanTotalBuku();
         // label total buku
-        lblTotalBuku = new JLabel("Total Buku: ...");
-        lblTotalBuku.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        lblTotalBuku.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        lblTotalBuku.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         // setting font
         JButton[] semuaButton = {
@@ -64,7 +58,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         timer.start();
     }
     
-    private void tampikanTotalBuku(){
+    private void tampilkanTotalBuku(){
         try (Connection conn = DBConnection.connect()){
             String sql = "SELECT COUNT(*) FROM buku";
             PreparedStatement stmt = conn.prepareStatement(sql);
@@ -72,6 +66,7 @@ public class DashboardFrame extends javax.swing.JFrame {
             if (rs.next()){
                 int total = rs.getInt(1);
                 lblTotalBuku.setText("Total Buku: " + total);
+                lblTotalBuku.setVisible(true);
             }
         }catch (SQLException e){
             lblTotalBuku.setText("Gagal memuat data buku");
@@ -96,8 +91,9 @@ public class DashboardFrame extends javax.swing.JFrame {
         btnScan = new javax.swing.JButton();
         btnManajemenBuku = new javax.swing.JButton();
         MainPanel = new javax.swing.JPanel();
-        lblWaktu = new javax.swing.JLabel();
+        PanelInfoAtas = new javax.swing.JPanel();
         lblTotalBuku = new javax.swing.JLabel();
+        lblWaktu = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -185,16 +181,36 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.setLayout(MainPanelLayout);
         MainPanelLayout.setHorizontalGroup(
             MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 294, Short.MAX_VALUE)
+            .addGap(0, 281, Short.MAX_VALUE)
         );
         MainPanelLayout.setVerticalGroup(
             MainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 235, Short.MAX_VALUE)
         );
 
+        lblTotalBuku.setText("TB");
+
         lblWaktu.setText("Time");
 
-        lblTotalBuku.setText("TB");
+        javax.swing.GroupLayout PanelInfoAtasLayout = new javax.swing.GroupLayout(PanelInfoAtas);
+        PanelInfoAtas.setLayout(PanelInfoAtasLayout);
+        PanelInfoAtasLayout.setHorizontalGroup(
+            PanelInfoAtasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(PanelInfoAtasLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblTotalBuku)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblWaktu)
+                .addContainerGap())
+        );
+        PanelInfoAtasLayout.setVerticalGroup(
+            PanelInfoAtasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, PanelInfoAtasLayout.createSequentialGroup()
+                .addGap(0, 8, Short.MAX_VALUE)
+                .addGroup(PanelInfoAtasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTotalBuku)
+                    .addComponent(lblWaktu)))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -205,10 +221,7 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lblTotalBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(225, 225, 225)
-                        .addComponent(lblWaktu))
+                    .addComponent(PanelInfoAtas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -216,10 +229,8 @@ public class DashboardFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(lblTotalBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblWaktu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(8, 8, 8)
+                .addComponent(PanelInfoAtas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -231,19 +242,23 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnCariBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCariBukuActionPerformed
         // TODO add your handling code here:
+        lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnCariBukuActionPerformed
 
     private void btnTransaksiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTransaksiActionPerformed
         // TODO add your handling code here:
+        lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnTransaksiActionPerformed
 
     private void btnScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanActionPerformed
         // TODO add your handling code here:
         new ScannerDialog(this);
+        lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnScanActionPerformed
 
     private void btnLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogoutActionPerformed
         // TODO add your handling code here:
+        lblTotalBuku.setVisible(false);
         int confirm = JOptionPane.showConfirmDialog(
             this,
             "Yakin ingin logout?",
@@ -265,16 +280,22 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.add(new ManajemenBukuPanel());
         MainPanel.revalidate();
         MainPanel.repaint();
+        
+        lblTotalBuku.setVisible(true);
+        tampilkanTotalBuku();
+        lblTotalBuku.revalidate();
+        lblTotalBuku.repaint();
+        PanelInfoAtas.revalidate();
+        PanelInfoAtas.repaint();
     }//GEN-LAST:event_btnManajemenBukuActionPerformed
 
     private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
         // TODO add your handling code here:
-        btnAktivitas.addActionListener(e -> {
-            MainPanel.removeAll();
-            MainPanel.add(new AktivitasPanel());
-            MainPanel.revalidate();
-            MainPanel.repaint();
-        });
+        MainPanel.removeAll();
+        MainPanel.add(new AktivitasPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
+        lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnAktivitasActionPerformed
 
     /**
@@ -314,6 +335,7 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel MainPanel;
+    private javax.swing.JPanel PanelInfoAtas;
     private javax.swing.JButton btnAktivitas;
     private javax.swing.JButton btnCariBuku;
     private javax.swing.JButton btnLogout;
