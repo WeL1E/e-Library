@@ -67,10 +67,12 @@ public class TabelStyler {
     }
 
     public static void setCenterAlignment(JTable tabel, int... columnIndexes) {
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        DefaultTableCellRenderer centerTopRenderer = new DefaultTableCellRenderer();
+        centerTopRenderer.setHorizontalAlignment(SwingConstants.CENTER); // Tengah horizontal
+        centerTopRenderer.setVerticalAlignment(SwingConstants.TOP);      // Atas vertikal ✅
+
         for (int col : columnIndexes) {
-            tabel.getColumnModel().getColumn(col).setCellRenderer(centerRenderer);
+            tabel.getColumnModel().getColumn(col).setCellRenderer(centerTopRenderer);
         }
     }
 }

@@ -20,6 +20,8 @@ public class ScannerDialog extends JDialog {
     private JComboBox<String> comboKategori;
     private JPanel webcamContainer;
     private boolean isWebcamRunning = false;
+    private long lastInvalidPopupTime = 0;
+    private static final int POPUP_COOLDOWN_MS = 2000;
 
     public ScannerDialog(JFrame parent) {
         super(parent, "e - Library | Scanner", true);
@@ -27,7 +29,6 @@ public class ScannerDialog extends JDialog {
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
 
-        // === DROPDOWN & BUTTON ===
         JPanel controlPanel = new JPanel(new FlowLayout());
         comboKategori = new JComboBox<>(new String[]{"Absensi", "Pinjam", "Kembalikan"});
         JButton btnMulaiScan = new JButton("Mulai Scan");
@@ -35,16 +36,14 @@ public class ScannerDialog extends JDialog {
         controlPanel.add(new JLabel("Kategori:"));
         controlPanel.add(comboKategori);
         controlPanel.add(btnMulaiScan);
-
         add(controlPanel, BorderLayout.SOUTH);
 
-        // === KONTENER PREVIEW WEBCAM (kosong dulu) ===
         webcamContainer = new JPanel(new BorderLayout());
         add(webcamContainer, BorderLayout.CENTER);
 
-        // === AKSI SAAT MULAI SCAN ===
+        // Tombol Mulai Scan
         btnMulaiScan.addActionListener(e -> {
-            stopWebcam(); // matikan dulu kalau sebelumnya sudah jalan
+            stopWebcam();
 
             String selected = (String) comboKategori.getSelectedItem();
             if (selected == null) return;
@@ -59,7 +58,7 @@ public class ScannerDialog extends JDialog {
             webcamPanel = new WebcamPanel(webcam);
             webcamPanel.setMirrored(true);
 
-            webcamContainer.removeAll(); // kosongkan preview sebelumnya
+            webcamContainer.removeAll();
             webcamContainer.add(webcamPanel, BorderLayout.CENTER);
             webcamContainer.revalidate();
             webcamContainer.repaint();
@@ -69,7 +68,6 @@ public class ScannerDialog extends JDialog {
 
             JOptionPane.showMessageDialog(this, "Mode " + selected + " Dipilih!");
 
-            // === THREAD SCAN BARCODE ===
             new Thread(() -> {
                 while (isWebcamRunning) {
                     try {
@@ -83,18 +81,43 @@ public class ScannerDialog extends JDialog {
                         try {
                             result = new MultiFormatReader().decode(bitmap);
                         } catch (NotFoundException ex) {
-                            continue; // belum ada barcode
+                            continue;
                         }
 
                         if (result != null) {
-                            String nimHasilScan = result.getText().trim();
+                            String hasilScan = result.getText().trim();
                             String kategoriDipilih = (String) comboKategori.getSelectedItem();
 
-                            isWebcamRunning = false;
-                            webcam.close();
+                            switch (kategoriDipilih) {
+                                case "Absensi":
+                                    if (isValidNIM(hasilScan)) {
+                                        isWebcamRunning = false;
+                                        webcam.close();
+                                        SwingUtilities.invokeLater(() -> prosesAbsensi(hasilScan, kategoriDipilih));
+                                    } else {
+                                        showCooldownPopup("❌ Barcode bukan NIM yang valid.");
+                                    }
+                                    break;
 
-                            SwingUtilities.invokeLater(() -> prosesAbsensi(nimHasilScan, kategoriDipilih));
-                            break;
+                                case "Pinjam":
+                                case "Kembalikan":
+                                    if (isValidKodeBuku(hasilScan)) {
+                                        isWebcamRunning = false;
+                                        webcam.close();
+                                        SwingUtilities.invokeLater(() -> {
+                                            JOptionPane.showMessageDialog(this, "✅ " + kategoriDipilih + " untuk kode buku: " + hasilScan);
+                                            dispose();
+                                            new ScannerDialog((JFrame) getParent());
+                                        });
+                                    } else {
+                                        showCooldownPopup("❌ Barcode bukan kode buku yang valid.");
+                                    }
+                                    break;
+
+                                default:
+                                    showCooldownPopup("❌ Kategori tidak dikenali.");
+                                    break;
+                            }
                         }
 
                     } catch (Exception ex) {
@@ -104,10 +127,8 @@ public class ScannerDialog extends JDialog {
             }).start();
         });
 
-        // === SAAT KATEGORI BERUBAH: matikan webcam dulu ===
         comboKategori.addActionListener(e -> stopWebcam());
 
-        // === SAAT DITUTUP ===
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -123,6 +144,40 @@ public class ScannerDialog extends JDialog {
         setVisible(true);
     }
 
+    private void showCooldownPopup(String message) {
+        long now = System.currentTimeMillis();
+        if (now - lastInvalidPopupTime > POPUP_COOLDOWN_MS) {
+            lastInvalidPopupTime = now;
+            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, message));
+        }
+    }
+
+    private boolean isValidKodeBuku(String kodeBuku) {
+        try (Connection conn = DBConnection.connect()) {
+            String sql = "SELECT 1 FROM buku WHERE kode_buku = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, kodeBuku);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean isValidNIM(String nim) {
+        try (Connection conn = DBConnection.connect()) {
+            String sql = "SELECT 1 FROM mahasiswa WHERE nim = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, nim);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private void stopWebcam() {
         if (webcam != null && webcam.isOpen()) {
             webcam.close();
@@ -136,8 +191,7 @@ public class ScannerDialog extends JDialog {
     }
 
     private void prosesAbsensi(String nim, String kategori) {
-        try {
-            Connection conn = DBConnection.connect();
+        try (Connection conn = DBConnection.connect()) {
 
             String checkSQL = "SELECT * FROM aktivitas WHERE nim = ? AND DATE(waktu_masuk) = CURDATE() AND waktu_keluar IS NULL";
             PreparedStatement checkStmt = conn.prepareStatement(checkSQL);
@@ -145,17 +199,15 @@ public class ScannerDialog extends JDialog {
             ResultSet rs = checkStmt.executeQuery();
 
             if (rs.next()) {
-                // Ada entri aktif → update waktu_keluar
+                // update keluar
                 int idAktivitas = rs.getInt("id_aktivitas");
-
                 String updateSQL = "UPDATE aktivitas SET waktu_keluar = NOW() WHERE id_aktivitas = ?";
                 PreparedStatement updateStmt = conn.prepareStatement(updateSQL);
                 updateStmt.setInt(1, idAktivitas);
                 updateStmt.executeUpdate();
-
                 JOptionPane.showMessageDialog(this, "✅ Keluar dicatat untuk NIM: " + nim);
             } else {
-                // Tidak ada entri aktif → INSERT masuk baru
+                // insert masuk
                 String mhsSQL = "SELECT nama, prodi FROM mahasiswa WHERE nim = ?";
                 PreparedStatement mhsStmt = conn.prepareStatement(mhsSQL);
                 mhsStmt.setString(1, nim);
@@ -164,7 +216,6 @@ public class ScannerDialog extends JDialog {
                 if (rsMhs.next()) {
                     String nama = rsMhs.getString("nama");
                     String prodi = rsMhs.getString("prodi");
-
                     String insertSQL = "INSERT INTO aktivitas (nim, nama_mahasiswa, prodi, waktu_masuk, keterangan) VALUES (?, ?, ?, NOW(), ?)";
                     PreparedStatement insertStmt = conn.prepareStatement(insertSQL);
                     insertStmt.setString(1, nim);
@@ -172,14 +223,21 @@ public class ScannerDialog extends JDialog {
                     insertStmt.setString(3, prodi);
                     insertStmt.setString(4, kategori);
                     insertStmt.executeUpdate();
-
-                    JOptionPane.showMessageDialog(this, "✅ Masuk dicatat untuk NIM: " + nim);
+                    JOptionPane.showMessageDialog(this, "✅ Masuk dicatat untuk NIM: " + nim, "Berhasil", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(this, "❌ Terjadi kesalahan saat memproses absensi.");
+                    JOptionPane.showMessageDialog(this, "❌ NIM tidak ditemukan.");
                 }
             }
 
-            conn.close();
+            // ✅ Refresh panel aktivitas setelah absensi berhasil
+            SwingUtilities.invokeLater(() -> {
+                if (getParent() instanceof DashboardFrame dashboard) {
+                    dashboard.refreshAktivitasPanel();
+                }
+                dispose();
+                new ScannerDialog((JFrame) getParent());
+            });
+
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "❌ Terjadi kesalahan saat memproses absensi.");

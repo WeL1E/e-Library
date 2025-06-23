@@ -4,6 +4,7 @@
  */
 package com.mycompany.elibrary;
 
+import com.mycompany.elibrary.AktivitasPanel;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -55,8 +56,8 @@ public class DashboardFrame extends javax.swing.JFrame {
 
         lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblWaktu.setForeground(new Color(30, 30, 30));
-        styleLabelInfo(lblTotalBuku, lblWaktu);
-        
+        styleLabelInfo(lblTotalBuku, lblWaktu);   
+
         tampilkanTotalBuku();
         
         // setting font
@@ -64,7 +65,7 @@ public class DashboardFrame extends javax.swing.JFrame {
             btnScan,
             btnAktivitas,
             btnManajemenBuku,
-            btnTransaksi, // pinjam & kembali
+            btnPinjam, // pinjam & kembali
             btnCariBuku,
             btnLogout
         };
@@ -84,6 +85,22 @@ public class DashboardFrame extends javax.swing.JFrame {
         if(halamanAwal.equalsIgnoreCase("AKTIVITAS")){
             tampilkanAktivitas();
         }
+    }
+    
+    public void refreshAktivitasPanel() {
+        MainPanel.removeAll();
+        MainPanel.add(new AktivitasPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
+        lblTotalBuku.setVisible(false);
+    }
+    
+    public void tampilkanPanelPinjam() {
+        lblTotalBuku.setVisible(false);
+        MainPanel.removeAll();
+        MainPanel.add(new PinjamPanel()); // gunakan class yang memang kamu pakai
+        MainPanel.revalidate();
+        MainPanel.repaint();
     }
     
     private void tampilkanAktivitas(){
@@ -128,7 +145,7 @@ public class DashboardFrame extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         btnAktivitas = new javax.swing.JButton();
-        btnTransaksi = new javax.swing.JButton();
+        btnPinjam = new javax.swing.JButton();
         btnCariBuku = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
         btnScan = new javax.swing.JButton();
@@ -151,10 +168,10 @@ public class DashboardFrame extends javax.swing.JFrame {
             }
         });
 
-        btnTransaksi.setText("Pinjam & kembali");
-        btnTransaksi.addActionListener(new java.awt.event.ActionListener() {
+        btnPinjam.setText("Pinjam & kembali");
+        btnPinjam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTransaksiActionPerformed(evt);
+                btnPinjamActionPerformed(evt);
             }
         });
 
@@ -198,7 +215,7 @@ public class DashboardFrame extends javax.swing.JFrame {
                     .addComponent(btnManajemenBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnAktivitas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnScan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnTransaksi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPinjam, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnCariBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnLogout, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(9, Short.MAX_VALUE))
@@ -213,7 +230,7 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnManajemenBuku, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnTransaksi)
+                .addComponent(btnPinjam)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnCariBuku)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -297,10 +314,14 @@ public class DashboardFrame extends javax.swing.JFrame {
         lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnCariBukuActionPerformed
 
-    private void btnTransaksiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTransaksiActionPerformed
+    private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
         // TODO add your handling code here:
         lblTotalBuku.setVisible(false);
-    }//GEN-LAST:event_btnTransaksiActionPerformed
+        MainPanel.removeAll();
+        MainPanel.add(new PinjamPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
+    }//GEN-LAST:event_btnPinjamActionPerformed
 
     private void btnScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanActionPerformed
         // TODO add your handling code here:
@@ -390,8 +411,8 @@ public class DashboardFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnCariBuku;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnManajemenBuku;
+    private javax.swing.JButton btnPinjam;
     private javax.swing.JButton btnScan;
-    private javax.swing.JButton btnTransaksi;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblTotalBuku;

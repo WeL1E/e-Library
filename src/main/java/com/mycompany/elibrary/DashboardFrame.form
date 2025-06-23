@@ -80,7 +80,7 @@
                       <Component id="btnManajemenBuku" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnAktivitas" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnScan" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnTransaksi" alignment="0" max="32767" attributes="0"/>
+                      <Component id="btnPinjam" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnCariBuku" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnLogout" alignment="0" max="32767" attributes="0"/>
                   </Group>
@@ -98,7 +98,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnManajemenBuku" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btnTransaksi" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnPinjam" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnCariBuku" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -117,12 +117,12 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAktivitasActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JButton" name="btnTransaksi">
+        <Component class="javax.swing.JButton" name="btnPinjam">
           <Properties>
             <Property name="text" type="java.lang.String" value="Pinjam &amp; kembali"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnTransaksiActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPinjamActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnCariBuku">

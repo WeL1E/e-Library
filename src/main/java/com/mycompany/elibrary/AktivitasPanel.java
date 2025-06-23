@@ -28,7 +28,7 @@ public class AktivitasPanel extends JPanel {
         loadDataAktivitas();
     }
 
-    private void loadDataAktivitas() {
+    public void loadDataAktivitas() {
         DefaultTableModel model = new DefaultTableModel();
         model.addColumn("NIM");
         model.addColumn("Nama");
