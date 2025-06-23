@@ -34,6 +34,25 @@ public class DashboardFrame extends javax.swing.JFrame {
         setUndecorated(false);
         initComponents();
         
+        // Aktifkan pencarian global di DashboardFrame
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+    @Override
+    public void keyReleased(java.awt.event.KeyEvent e) {
+        if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+            String keyword = txtSearch.getText().trim();
+
+            // Selalu tampilkan panel Manajemen Buku (untuk pencarian atau load semua)
+            MainPanel.removeAll();
+            MainPanel.add(new ManajemenBukuPanel(txtSearch));
+            MainPanel.revalidate();
+            MainPanel.repaint();
+
+            lblTotalBuku.setVisible(true);
+            tampilkanTotalBuku();
+        }
+    }
+});
+
         lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblWaktu.setForeground(new Color(30, 30, 30));
         styleLabelInfo(lblTotalBuku, lblWaktu);
@@ -119,6 +138,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         lblTotalBuku = new javax.swing.JLabel();
         lblWaktu = new javax.swing.JLabel();
         txtSearch = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -234,15 +254,20 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
+        jLabel2.setText("Cari Buku:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txtSearch))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtSearch)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(MainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -255,7 +280,8 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(txtSearch)
-                    .addComponent(PanelInfoAtas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(PanelInfoAtas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -303,7 +329,7 @@ public class DashboardFrame extends javax.swing.JFrame {
     private void btnManajemenBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenBukuActionPerformed
         // TODO add your handling code here:
         MainPanel.removeAll();
-        MainPanel.add(new ManajemenBukuPanel());
+        MainPanel.add(new ManajemenBukuPanel(txtSearch)); // Kirim txtSearch ke panel
         MainPanel.revalidate();
         MainPanel.repaint();
 
@@ -366,6 +392,7 @@ public class DashboardFrame extends javax.swing.JFrame {
     private javax.swing.JButton btnManajemenBuku;
     private javax.swing.JButton btnScan;
     private javax.swing.JButton btnTransaksi;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblTotalBuku;
     private javax.swing.JLabel lblWaktu;

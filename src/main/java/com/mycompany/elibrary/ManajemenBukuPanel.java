@@ -10,27 +10,15 @@ import java.util.Set;
 public class ManajemenBukuPanel extends JPanel {
     
     private JTextField txtSearch;
-    private JButton btnSearch;
-    
-    
     private JTable tabelBuku;
     private JScrollPane scrollPane;
     private final Set<Integer> rowYangDibesarkan = new HashSet<>();
 
-    public ManajemenBukuPanel() {
-        
-        txtSearch = new JTextField(20);
-        btnSearch = new JButton("Cari");
-
-        JPanel panelSearch = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelSearch.add(new JLabel("Cari Judul:"));
-        panelSearch.add(txtSearch);
-        panelSearch.add(btnSearch);
-
-        add(panelSearch, BorderLayout.NORTH);
-        
+    public ManajemenBukuPanel(JTextField txtSearchExternal) {
         setLayout(new BorderLayout());
+        this.txtSearch = txtSearchExternal;
 
+        // Buat tabel
         tabelBuku = new JTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -41,7 +29,13 @@ public class ManajemenBukuPanel extends JPanel {
         scrollPane = new JScrollPane(tabelBuku);
         add(scrollPane, BorderLayout.CENTER);
 
-        loadDataBuku();
+        // Cek apakah txtSearch berisi keyword pencarian
+        String keyword = txtSearch.getText().trim();
+        if (!keyword.isEmpty()) {
+            cariBuku(keyword);
+        } else {
+            loadDataBuku(); // tampilkan semua data jika kosong
+        }
     }
 
     private void loadDataBuku() {
@@ -52,8 +46,6 @@ public class ManajemenBukuPanel extends JPanel {
         model.addColumn("Penerbit");
         model.addColumn("Tahun");
         model.addColumn("Kategori");
-        model.addColumn("Jumlah");
-        model.addColumn("Tersedia");
 
         try (Connection conn = DBConnection.connect()) {
             String sql = "SELECT * FROM buku";
@@ -67,20 +59,62 @@ public class ManajemenBukuPanel extends JPanel {
                     rs.getString("penulis"),
                     rs.getString("penerbit"),
                     rs.getInt("tahun_terbit"),
-                    rs.getString("kategori"),
-                    rs.getInt("jumlah"),
-                    rs.getInt("tersedia")
+                    rs.getString("kategori")
                 });
             }
 
             tabelBuku.setModel(model);
-
-            // ✅ Terapkan style modular
             TabelStyler.setTabelStyle(tabelBuku, rowYangDibesarkan, 24);
-            TabelStyler.setCenterAlignment(tabelBuku, 4, 6, 7); // Tahun, Jumlah, Tersedia
+            TabelStyler.setCenterAlignment(tabelBuku, 4); // Tahun
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data buku: " + e.getMessage());
+        }
+    }
+
+    private void cariBuku(String keyword) {
+        DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("Kode Buku");
+        model.addColumn("Judul");
+        model.addColumn("Penulis");
+        model.addColumn("Penerbit");
+        model.addColumn("Tahun");
+        model.addColumn("Kategori");
+
+        try (Connection conn = DBConnection.connect()) {
+            String sql = "SELECT * FROM buku WHERE " +
+                    "LOWER(kode_buku) LIKE ? OR " +
+                    "LOWER(judul_buku) LIKE ? OR " +
+                    "LOWER(penulis) LIKE ? OR " +
+                    "LOWER(penerbit) LIKE ? OR " +
+                    "CAST(tahun_terbit AS CHAR) LIKE ? OR " +
+                    "LOWER(kategori) LIKE ?";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            String keywordLike = "%" + keyword.toLowerCase() + "%";
+            for (int i = 1; i <= 6; i++) {
+                stmt.setString(i, keywordLike);
+            }
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                    rs.getString("kode_buku"),
+                    rs.getString("judul_buku"),
+                    rs.getString("penulis"),
+                    rs.getString("penerbit"),
+                    rs.getInt("tahun_terbit"),
+                    rs.getString("kategori")
+                });
+            }
+
+            tabelBuku.setModel(model);
+            TabelStyler.setTabelStyle(tabelBuku, rowYangDibesarkan, 24);
+            TabelStyler.setCenterAlignment(tabelBuku, 4); // Tahun
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Gagal mencari buku: " + e.getMessage());
         }
     }
 }
