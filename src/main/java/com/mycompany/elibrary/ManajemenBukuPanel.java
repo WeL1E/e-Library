@@ -8,12 +8,27 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ManajemenBukuPanel extends JPanel {
-
+    
+    private JTextField txtSearch;
+    private JButton btnSearch;
+    
+    
     private JTable tabelBuku;
     private JScrollPane scrollPane;
     private final Set<Integer> rowYangDibesarkan = new HashSet<>();
 
     public ManajemenBukuPanel() {
+        
+        txtSearch = new JTextField(20);
+        btnSearch = new JButton("Cari");
+
+        JPanel panelSearch = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelSearch.add(new JLabel("Cari Judul:"));
+        panelSearch.add(txtSearch);
+        panelSearch.add(btnSearch);
+
+        add(panelSearch, BorderLayout.NORTH);
+        
         setLayout(new BorderLayout());
 
         tabelBuku = new JTable() {
