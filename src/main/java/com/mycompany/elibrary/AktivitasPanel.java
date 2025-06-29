@@ -33,8 +33,8 @@ public class AktivitasPanel extends JPanel {
         model.addColumn("NIM");
         model.addColumn("Nama");
         model.addColumn("Prodi");
-        model.addColumn("Waktu Masuk");
-        model.addColumn("Waktu Keluar");
+        model.addColumn("Check in");
+        model.addColumn("Check out");
         model.addColumn("Keterangan");
 
         try (Connection conn = DBConnection.connect()) {

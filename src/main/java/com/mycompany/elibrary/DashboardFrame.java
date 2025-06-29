@@ -8,6 +8,7 @@ import com.mycompany.elibrary.AktivitasPanel;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
 import javax.swing.Timer;
 import java.sql.Connection;
@@ -34,33 +35,44 @@ public class DashboardFrame extends javax.swing.JFrame {
     public DashboardFrame(String halamanAwal) {
         setUndecorated(false);
         initComponents();
-        
-        // Aktifkan pencarian global di DashboardFrame
+
+        // 🔇 Hilangkan suara beep saat txtSearch kosong + tekan tombol tertentu
         txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
-    @Override
-    public void keyReleased(java.awt.event.KeyEvent e) {
-        if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
-            String keyword = txtSearch.getText().trim();
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if ((e.getKeyCode() == KeyEvent.VK_ENTER 
+                        || e.getKeyCode() == KeyEvent.VK_DELETE 
+                        || e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
+                    && txtSearch.getText().trim().isEmpty()) {
+                    e.consume(); // Hentikan event agar tidak beep
+                }
+            }
 
-            // Selalu tampilkan panel Manajemen Buku (untuk pencarian atau load semua)
-            MainPanel.removeAll();
-            MainPanel.add(new ManajemenBukuPanel(txtSearch));
-            MainPanel.revalidate();
-            MainPanel.repaint();
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String keyword = txtSearch.getText().trim();
 
-            lblTotalBuku.setVisible(true);
-            tampilkanTotalBuku();
-        }
-    }
-});
+                    // Tampilkan panel manajemen buku untuk hasil pencarian
+                    MainPanel.removeAll();
+                    MainPanel.add(new ManajemenBukuPanel(txtSearch));
+                    MainPanel.revalidate();
+                    MainPanel.repaint();
 
+                    lblTotalBuku.setVisible(true);
+                    tampilkanTotalBuku();
+                }
+            }
+        });
+
+        // Styling waktu & label jumlah buku
         lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblWaktu.setForeground(new Color(30, 30, 30));
         styleLabelInfo(lblTotalBuku, lblWaktu);   
 
         tampilkanTotalBuku();
-        
-        // setting font
+
+        // Styling tombol sidebar
         JButton[] semuaButton = {
             btnScan,
             btnAktivitas,
@@ -69,23 +81,27 @@ public class DashboardFrame extends javax.swing.JFrame {
             btnCariBuku,
             btnLogout
         };
-        
-        for(JButton btn : semuaButton){
-            btn.setFont(new Font("Segoe UI", Font.BOLD,16));
+
+        for (JButton btn : semuaButton) {
+            btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
         }
-        
+
+        // Pengaturan JFrame
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setTitle("e - library | Dashboard");
         setResizable(false);
         MainPanel.setLayout(new CardLayout());
-        
+
+        // Timer real-time untuk waktu sekarang
         Timer timer = new Timer(1000, e -> lblWaktu.setText(WaktuFormatter.now()));
         timer.start();
-        
-        if(halamanAwal.equalsIgnoreCase("AKTIVITAS")){
+
+        // Panel awal
+        if (halamanAwal.equalsIgnoreCase("AKTIVITAS")) {
             tampilkanAktivitas();
         }
     }
+
     
     public void refreshAktivitasPanel() {
         MainPanel.removeAll();
@@ -271,6 +287,17 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchActionPerformed(evt);
+            }
+        });
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                txtSearchKeyPressed(evt);
+            }
+        });
+
         jLabel2.setText("Cari Buku:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -368,6 +395,15 @@ public class DashboardFrame extends javax.swing.JFrame {
         
         lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnAktivitasActionPerformed
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void txtSearchKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyPressed
+        // TODO add your handling code here:
+        
+    }//GEN-LAST:event_txtSearchKeyPressed
 
     /**
      * @param args the command line arguments
