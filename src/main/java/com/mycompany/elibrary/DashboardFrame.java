@@ -341,6 +341,13 @@ public class DashboardFrame extends javax.swing.JFrame {
         lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnCariBukuActionPerformed
 
+    public void refreshTransaksiPanel() {
+        MainPanel.removeAll();
+        MainPanel.add(new PinjamPanel()); // atau nama panel transaksi kamu
+        MainPanel.revalidate();
+        MainPanel.repaint();
+    }
+
     private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
         // TODO add your handling code here:
         lblTotalBuku.setVisible(false);

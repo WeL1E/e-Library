@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ManajemenBukuPanel extends JPanel {
-    
+
     private JTextField txtSearch;
     private JTable tabelBuku;
     private JScrollPane scrollPane;
@@ -18,7 +18,6 @@ public class ManajemenBukuPanel extends JPanel {
         setLayout(new BorderLayout());
         this.txtSearch = txtSearchExternal;
 
-        // Buat tabel
         tabelBuku = new JTable() {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -29,17 +28,17 @@ public class ManajemenBukuPanel extends JPanel {
         scrollPane = new JScrollPane(tabelBuku);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Cek apakah txtSearch berisi keyword pencarian
         String keyword = txtSearch.getText().trim();
         if (!keyword.isEmpty()) {
             cariBuku(keyword);
         } else {
-            loadDataBuku(); // tampilkan semua data jika kosong
+            loadDataBuku();
         }
     }
 
     private void loadDataBuku() {
         DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("No");
         model.addColumn("Kode Buku");
         model.addColumn("Judul");
         model.addColumn("Penulis");
@@ -52,8 +51,10 @@ public class ManajemenBukuPanel extends JPanel {
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
 
+            int no = 1;
             while (rs.next()) {
                 model.addRow(new Object[]{
+                    no++,
                     rs.getString("kode_buku"),
                     rs.getString("judul_buku"),
                     rs.getString("penulis"),
@@ -64,8 +65,9 @@ public class ManajemenBukuPanel extends JPanel {
             }
 
             tabelBuku.setModel(model);
+            tabelBuku.getColumnModel().getColumn(0).setPreferredWidth(40); // "No" kecil
             TabelStyler.setTabelStyle(tabelBuku, rowYangDibesarkan, 24);
-            TabelStyler.setCenterAlignment(tabelBuku, 4); // Tahun
+            TabelStyler.setCenterAlignment(tabelBuku, 5); // Kolom Tahun
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data buku: " + e.getMessage());
@@ -74,6 +76,7 @@ public class ManajemenBukuPanel extends JPanel {
 
     private void cariBuku(String keyword) {
         DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("No");
         model.addColumn("Kode Buku");
         model.addColumn("Judul");
         model.addColumn("Penulis");
@@ -98,8 +101,10 @@ public class ManajemenBukuPanel extends JPanel {
 
             ResultSet rs = stmt.executeQuery();
 
+            int no = 1;
             while (rs.next()) {
                 model.addRow(new Object[]{
+                    no++,
                     rs.getString("kode_buku"),
                     rs.getString("judul_buku"),
                     rs.getString("penulis"),
@@ -110,8 +115,9 @@ public class ManajemenBukuPanel extends JPanel {
             }
 
             tabelBuku.setModel(model);
+            tabelBuku.getColumnModel().getColumn(0).setPreferredWidth(40); // "No" kecil
             TabelStyler.setTabelStyle(tabelBuku, rowYangDibesarkan, 24);
-            TabelStyler.setCenterAlignment(tabelBuku, 4); // Tahun
+            TabelStyler.setCenterAlignment(tabelBuku, 5); // Kolom Tahun
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal mencari buku: " + e.getMessage());

@@ -30,6 +30,7 @@ public class AktivitasPanel extends JPanel {
 
     public void loadDataAktivitas() {
         DefaultTableModel model = new DefaultTableModel();
+        model.addColumn("No");
         model.addColumn("NIM");
         model.addColumn("Nama");
         model.addColumn("Prodi");
@@ -42,8 +43,10 @@ public class AktivitasPanel extends JPanel {
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
 
+            int no = 1;
             while (rs.next()) {
                 model.addRow(new Object[]{
+                    no++,
                     rs.getString("nim"),
                     rs.getString("nama_mahasiswa"),
                     rs.getString("prodi"),
@@ -57,9 +60,12 @@ public class AktivitasPanel extends JPanel {
 
             tabelAktivitas.setModel(model);
 
+            // "No" kecil
+            tabelAktivitas.getColumnModel().getColumn(0).setPreferredWidth(40);
+
             // 🔧 Terapkan styling dari TabelStyler
             TabelStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 24);
-            TabelStyler.setCenterAlignment(tabelAktivitas,0, 3, 4); // waktu_masuk & keluar
+            TabelStyler.setCenterAlignment(tabelAktivitas, 0, 4, 5); // "No", waktu masuk & keluar
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data aktivitas: " + e.getMessage());

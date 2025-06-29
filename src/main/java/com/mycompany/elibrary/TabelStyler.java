@@ -36,23 +36,40 @@ public class TabelStyler {
             }
         });
 
-        // Efek ellipsis + tooltip
+        // Efek ellipsis + tooltip + wrapping saat baris diperbesar
         TableModel model = tabel.getModel();
         for (int i = 0; i < model.getColumnCount(); i++) {
             int col = i;
             tabel.getColumnModel().getColumn(col).setCellRenderer((table, value, isSelected, hasFocus, row, column) -> {
+                String teks = value != null ? value.toString() : "";
+
                 if (rowYangDibesarkan.contains(row)) {
-                    JTextArea textArea = new JTextArea(value != null ? value.toString() : "");
-                    textArea.setLineWrap(true);
-                    textArea.setWrapStyleWord(true);
-                    textArea.setFont(table.getFont());
-                    textArea.setOpaque(true);
-                    textArea.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-                    textArea.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-                    return textArea;
+                    // Baris dibesarkan
+                    if (column == 0) {
+                        // Kolom "No" saat dibesarkan → Top Center
+                        JLabel label = new JLabel(teks);
+                        label.setFont(table.getFont());
+                        label.setOpaque(true);
+                        label.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+                        label.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+                        label.setHorizontalAlignment(SwingConstants.CENTER);
+                        label.setVerticalAlignment(SwingConstants.TOP);
+                        label.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+                        return label;
+                    } else {
+                        // Kolom lain dibesarkan → TextArea (wrap)
+                        JTextArea textArea = new JTextArea(teks);
+                        textArea.setLineWrap(true);
+                        textArea.setWrapStyleWord(true);
+                        textArea.setFont(table.getFont());
+                        textArea.setOpaque(true);
+                        textArea.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+                        textArea.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+                        return textArea;
+                    }
                 } else {
+                    // Default row
                     JLabel label = new JLabel();
-                    String teks = value != null ? value.toString() : "";
                     label.setText(teks.length() > 40 ? teks.substring(0, 37) + "..." : teks);
                     label.setToolTipText(teks);
                     label.setFont(table.getFont());
@@ -60,6 +77,8 @@ public class TabelStyler {
                     label.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
                     label.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
                     label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+                    label.setHorizontalAlignment(column == 0 ? SwingConstants.CENTER : SwingConstants.LEADING);
+                    label.setVerticalAlignment(column == 0 ? SwingConstants.CENTER : SwingConstants.CENTER);
                     return label;
                 }
             });
@@ -68,8 +87,8 @@ public class TabelStyler {
 
     public static void setCenterAlignment(JTable tabel, int... columnIndexes) {
         DefaultTableCellRenderer centerTopRenderer = new DefaultTableCellRenderer();
-        centerTopRenderer.setHorizontalAlignment(SwingConstants.CENTER); // Tengah horizontal
-        centerTopRenderer.setVerticalAlignment(SwingConstants.TOP);      // Atas vertikal ✅
+        centerTopRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        centerTopRenderer.setVerticalAlignment(SwingConstants.TOP);
 
         for (int col : columnIndexes) {
             tabel.getColumnModel().getColumn(col).setCellRenderer(centerTopRenderer);
