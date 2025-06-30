@@ -48,8 +48,10 @@ public class PinjamPanel extends JPanel {
                 String nim = rs.getString("nim");
                 String nama = rs.getString("nama"); // ✅ Ambil nama mahasiswa
                 String judul = rs.getString("judul_buku");
-                Timestamp waktuPinjam = rs.getTimestamp("waktu_pinjam");
-                Timestamp waktuKembali = rs.getTimestamp("waktu_kembali");
+                String waktuPinjam = WaktuFormatter.format(rs.getTimestamp("waktu_pinjam"));
+                String waktuKembali = rs.getTimestamp("waktu_kembali") != null
+                    ? WaktuFormatter.format(rs.getTimestamp("waktu_kembali"))
+                    : "-";
                 double dendaRaw = rs.getDouble("denda");
 
                 String dendaFormatted = formatRupiah.format(dendaRaw);

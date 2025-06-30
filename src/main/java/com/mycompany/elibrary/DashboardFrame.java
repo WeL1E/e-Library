@@ -4,7 +4,6 @@
  */
 package com.mycompany.elibrary;
 
-import com.mycompany.elibrary.AktivitasPanel;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -102,7 +101,6 @@ public class DashboardFrame extends javax.swing.JFrame {
         }
     }
 
-    
     public void refreshAktivitasPanel() {
         MainPanel.removeAll();
         MainPanel.add(new AktivitasPanel());
@@ -111,20 +109,27 @@ public class DashboardFrame extends javax.swing.JFrame {
         lblTotalBuku.setVisible(false);
     }
     
-    public void tampilkanPanelPinjam() {
-        lblTotalBuku.setVisible(false);
-        MainPanel.removeAll();
-        MainPanel.add(new PinjamPanel()); // gunakan class yang memang kamu pakai
-        MainPanel.revalidate();
-        MainPanel.repaint();
-    }
-    
     private void tampilkanAktivitas(){
         MainPanel.removeAll();
         MainPanel.add(new AktivitasPanel());
         MainPanel.revalidate();
         MainPanel.repaint();
-        
+        lblTotalBuku.setVisible(false);
+    }
+    
+    public void refreshPinjamPanel() {
+        MainPanel.removeAll();
+        MainPanel.add(new PinjamPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
+        lblTotalBuku.setVisible(false);
+    }
+    
+    public void tampilkanPanelPinjam() {
+        MainPanel.removeAll();
+        MainPanel.add(new PinjamPanel());
+        MainPanel.revalidate();
+        MainPanel.repaint();
         lblTotalBuku.setVisible(false);
     }
     

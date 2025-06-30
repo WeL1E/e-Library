@@ -3,7 +3,6 @@ package com.mycompany.elibrary;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
-import java.util.ArrayList;
 
 public class FormPinjamDialog extends JDialog {
     private JComboBox<String> comboNIM;
