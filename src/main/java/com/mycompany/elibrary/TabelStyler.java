@@ -8,14 +8,25 @@ import java.util.Set;
 
 public class TabelStyler {
 
+    // Versi 3 parameter (default bold header = true)
     public static void setTabelStyle(JTable tabel, Set<Integer> rowYangDibesarkan, int defaultRowHeight) {
+        applyTabelStyle(tabel, rowYangDibesarkan, defaultRowHeight, true);
+    }
+
+    // Versi 4 parameter (boleh atur apakah header bold)
+    public static void setTabelStyle(JTable tabel, Set<Integer> rowYangDibesarkan, int defaultRowHeight, boolean boldHeader) {
+        applyTabelStyle(tabel, rowYangDibesarkan, defaultRowHeight, boldHeader);
+    }
+
+    // Method inti yang dipanggil oleh keduanya
+    private static void applyTabelStyle(JTable tabel, Set<Integer> rowYangDibesarkan, int defaultRowHeight, boolean boldHeader) {
         tabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         tabel.setRowHeight(defaultRowHeight);
-        tabel.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 18));
+        tabel.getTableHeader().setFont(new Font("Segoe UI", boldHeader ? Font.BOLD : Font.PLAIN, 18));
         tabel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabel.setFillsViewportHeight(true);
 
-        // Klik dua kali untuk perbesar baris
+        // Klik dua kali untuk memperbesar baris
         tabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -78,7 +89,7 @@ public class TabelStyler {
                     label.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
                     label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
                     label.setHorizontalAlignment(column == 0 ? SwingConstants.CENTER : SwingConstants.LEADING);
-                    label.setVerticalAlignment(column == 0 ? SwingConstants.CENTER : SwingConstants.CENTER);
+                    label.setVerticalAlignment(SwingConstants.CENTER);
                     return label;
                 }
             });

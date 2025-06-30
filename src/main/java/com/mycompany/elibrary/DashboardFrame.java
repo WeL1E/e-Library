@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
  * @author aldor
  */
 public class DashboardFrame extends javax.swing.JFrame {
+    private PinjamPanel pinjamPanel;
     public DashboardFrame(){
         this("DASHBOARD");
     }
@@ -54,7 +55,7 @@ public class DashboardFrame extends javax.swing.JFrame {
 
                     // Tampilkan panel manajemen buku untuk hasil pencarian
                     MainPanel.removeAll();
-                    MainPanel.add(new ManajemenBukuPanel(txtSearch));
+                    new ManajemenBukuPanel(txtSearch, lblTotalBuku);
                     MainPanel.revalidate();
                     MainPanel.repaint();
 
@@ -117,17 +118,12 @@ public class DashboardFrame extends javax.swing.JFrame {
         lblTotalBuku.setVisible(false);
     }
     
-    public void refreshPinjamPanel() {
-        MainPanel.removeAll();
-        MainPanel.add(new PinjamPanel());
-        MainPanel.revalidate();
-        MainPanel.repaint();
-        lblTotalBuku.setVisible(false);
-    }
-    
     public void tampilkanPanelPinjam() {
+        if (pinjamPanel == null) {
+            pinjamPanel = new PinjamPanel();
+        }
         MainPanel.removeAll();
-        MainPanel.add(new PinjamPanel());
+        MainPanel.add(pinjamPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
         lblTotalBuku.setVisible(false);
@@ -154,6 +150,10 @@ public class DashboardFrame extends javax.swing.JFrame {
             System.err.println("Error: " + e.getMessage());
         }
     }
+    
+    public PinjamPanel getPinjamPanel() {
+    return pinjamPanel;
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -389,7 +389,7 @@ public class DashboardFrame extends javax.swing.JFrame {
     private void btnManajemenBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenBukuActionPerformed
         // TODO add your handling code here:
         MainPanel.removeAll();
-        MainPanel.add(new ManajemenBukuPanel(txtSearch)); // Kirim txtSearch ke panel
+        MainPanel.add(new ManajemenBukuPanel(txtSearch, lblTotalBuku));
         MainPanel.revalidate();
         MainPanel.repaint();
 

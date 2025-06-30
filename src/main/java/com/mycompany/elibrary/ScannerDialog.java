@@ -288,6 +288,7 @@ public class ScannerDialog extends JDialog {
                 return;
             }
 
+            // Cek apakah buku sedang dipinjam oleh mahasiswa yang sama
             String sql = "SELECT * FROM pinjaman WHERE nim = ? AND kode_buku = ? AND waktu_pinjam IS NOT NULL AND waktu_kembali IS NULL";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, nim);
@@ -295,6 +296,7 @@ public class ScannerDialog extends JDialog {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
+                // ➕ Kembalikan buku
                 Timestamp waktuPinjam = rs.getTimestamp("waktu_pinjam");
                 long days = ChronoUnit.DAYS.between(waktuPinjam.toLocalDateTime().toLocalDate(), LocalDate.now());
                 int denda = (int) Math.max(0, days - 7) * 500;
@@ -305,8 +307,28 @@ public class ScannerDialog extends JDialog {
                 updateStmt.setInt(2, rs.getInt("id"));
                 updateStmt.executeUpdate();
 
+                // Tambah stok tersedia
+                String updateTersediaSQL = "UPDATE buku SET tersedia = tersedia + 1 WHERE kode_buku = ?";
+                PreparedStatement updateTersediaStmt = conn.prepareStatement(updateTersediaSQL);
+                updateTersediaStmt.setString(1, kodeBuku);
+                updateTersediaStmt.executeUpdate();
+
                 JOptionPane.showMessageDialog(this, "✅ Buku dikembalikan. Denda: Rp" + String.format("%,d", denda).replace(',', '.'));
             } else {
+                // 🔁 Cek stok tersedia
+                String cekStok = "SELECT tersedia FROM buku WHERE kode_buku = ?";
+                PreparedStatement cekStokStmt = conn.prepareStatement(cekStok);
+                cekStokStmt.setString(1, kodeBuku);
+                ResultSet rsStok = cekStokStmt.executeQuery();
+                if (rsStok.next()) {
+                    int tersedia = rsStok.getInt("tersedia");
+                    if (tersedia <= 0) {
+                        JOptionPane.showMessageDialog(this, "❌ Buku tidak tersedia untuk dipinjam.");
+                        return;
+                    }
+                }
+
+                // ➖ Masukkan peminjaman baru
                 String insert = "INSERT INTO pinjaman (nim, nama, kode_buku, judul_buku, waktu_pinjam, keterangan) VALUES (?, ?, ?, ?, NOW(), 'Dipinjam')";
                 PreparedStatement insertStmt = conn.prepareStatement(insert);
                 insertStmt.setString(1, nim);
@@ -314,6 +336,12 @@ public class ScannerDialog extends JDialog {
                 insertStmt.setString(3, kodeBuku);
                 insertStmt.setString(4, judul);
                 insertStmt.executeUpdate();
+
+                // Kurangi stok tersedia
+                String updateTersediaSQL = "UPDATE buku SET tersedia = tersedia - 1 WHERE kode_buku = ? AND tersedia > 0";
+                PreparedStatement updateTersediaStmt = conn.prepareStatement(updateTersediaSQL);
+                updateTersediaStmt.setString(1, kodeBuku);
+                updateTersediaStmt.executeUpdate();
 
                 JOptionPane.showMessageDialog(this, "✅ Buku dipinjamkan ke " + nim + " - " + namaMahasiswa);
             }

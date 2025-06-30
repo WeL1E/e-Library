@@ -64,7 +64,7 @@ public class AktivitasPanel extends JPanel {
             tabelAktivitas.getColumnModel().getColumn(0).setPreferredWidth(40);
 
             // 🔧 Terapkan styling dari TabelStyler
-            TabelStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 24);
+            TabelStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 30, true);
             TabelStyler.setCenterAlignment(tabelAktivitas, 0, 4, 5); // "No", waktu masuk & keluar
 
         } catch (SQLException e) {
