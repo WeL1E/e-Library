@@ -42,39 +42,41 @@ public class AktivitasPanel extends JPanel {
     public void loadDataAktivitas() {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
-            "No", "NIM", "Nama", "Prodi", "Check in", "Check out", "Keterangan"
+            "No", "NIM", "Nama", "Prodi", "Waktu Masuk", "Waktu Keluar", "Status"
         });
 
         try (Connection conn = DBConnection.connect()) {
-            String sql = "SELECT nim, nama_mahasiswa, prodi, waktu_masuk, waktu_keluar, keterangan FROM aktivitas ORDER BY waktu_masuk DESC";
+            String sql = "SELECT nim, nama_mahasiswa, prodi, waktu_masuk, waktu_keluar FROM aktivitas ORDER BY waktu_masuk DESC";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
 
             int no = 1;
             while (rs.next()) {
+                Timestamp waktuMasuk = rs.getTimestamp("waktu_masuk");
+                Timestamp waktuKeluar = rs.getTimestamp("waktu_keluar");
+
+                String status = (waktuKeluar == null) ? "Di Dalam" : "Sudah Keluar";
+
                 model.addRow(new Object[]{
                     no++,
                     rs.getString("nim"),
                     rs.getString("nama_mahasiswa"),
                     rs.getString("prodi"),
-                    WaktuFormatter.format(rs.getTimestamp("waktu_masuk")),
-                    rs.getTimestamp("waktu_keluar") != null
-                        ? WaktuFormatter.format(rs.getTimestamp("waktu_keluar"))
-                        : "-",
-                    rs.getString("keterangan")
+                    WaktuFormatter.format(waktuMasuk),
+                    (waktuKeluar != null) ? WaktuFormatter.format(waktuKeluar) : "-",
+                    status
                 });
             }
 
             tabelAktivitas.setModel(model);
 
-            // ✅ SOLUSI: selalu set RowSorter baru tiap kali data di-load
             sorter = new TableRowSorter<>(model);
             tabelAktivitas.setRowSorter(sorter);
 
             tabelAktivitas.getColumnModel().getColumn(0).setPreferredWidth(40);
 
-            int[] centerBefore = {0, 4, 5}; // No, Check in, Check out
-            int[] centerAfter = {4, 5};    // Check in, Check out
+            int[] centerBefore = {0, 1, 4, 5}; // No, Masuk, Keluar, Status
+            int[] centerAfter = {4, 5, 6};
             TableStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 24, centerBefore, centerAfter);
 
         } catch (SQLException e) {

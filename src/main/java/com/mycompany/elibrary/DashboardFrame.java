@@ -79,7 +79,8 @@ public class DashboardFrame extends javax.swing.JFrame {
         // Styling waktu & label jumlah buku
         lblWaktu.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblWaktu.setForeground(new Color(30, 30, 30));
-        styleLabelInfo(lblTotalBuku, lblWaktu);   
+        styleLabelInfo(lblTotalBuku, lblWaktu); 
+        lblTotalBuku.setVisible(false);
 
         tampilkanTotalBuku();
 
@@ -106,6 +107,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.setLayout(new CardLayout());
 
         // Timer real-time untuk waktu sekarang
+        lblWaktu.setText(WaktuFormatter.now());
         Timer timer = new Timer(1000, e -> lblWaktu.setText(WaktuFormatter.now()));
         timer.start();
 
@@ -127,10 +129,11 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.add(manajemenBukuPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
-        lblTotalBuku.setVisible(true);
         panelAktif = "ManajemenBuku";
 
-        // Jalankan search sesuai teks yang sudah ada
+        tampilkanTotalBuku();
+        lblTotalBuku.setVisible(true);
+
         String keyword = txtSearch.getText().trim().toLowerCase();
         manajemenBukuPanel.search(keyword);
     }
@@ -141,8 +144,9 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.add(aktivitasPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
-        lblTotalBuku.setVisible(false);
         panelAktif = "Aktivitas";
+        
+        lblTotalBuku.setVisible(false);
     }
 
     public void tampilkanPanelPinjam() {
@@ -153,8 +157,9 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.add(pinjamPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
-        lblTotalBuku.setVisible(true);
         panelAktif = "Pinjam";
+        
+        lblTotalBuku.setVisible(false);
     }
 
     
@@ -168,12 +173,12 @@ public class DashboardFrame extends javax.swing.JFrame {
     
     private void tampilkanTotalBuku(){
         try (Connection conn = DBConnection.connect()){
-            String sql = "SELECT SUM(tersedia) FROM buku";
+            String sql = "SELECT SUM(stock) FROM buku";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()){
                 int total = rs.getInt(1);
-                lblTotalBuku.setText("Total Buku Tersedia: " + total);
+                lblTotalBuku.setText("Total Stok Buku: " + total);
                 lblTotalBuku.setVisible(true);
             }
         } catch (SQLException e){
@@ -387,6 +392,7 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
         // TODO add your handling code here:
+        lblTotalBuku.setVisible(false);
         pinjamPanel = new PinjamPanel();
         MainPanel.removeAll();
         MainPanel.add(pinjamPanel);
@@ -421,11 +427,13 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnManajemenBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenBukuActionPerformed
         // TODO add your handling code here:
+        lblTotalBuku.setVisible(false);
         tampilkanManajemenBuku();
     }//GEN-LAST:event_btnManajemenBukuActionPerformed
 
     private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
         // TODO add your handling code here:
+        lblTotalBuku.setVisible(false);
         tampilkanAktivitas();
     }//GEN-LAST:event_btnAktivitasActionPerformed
 

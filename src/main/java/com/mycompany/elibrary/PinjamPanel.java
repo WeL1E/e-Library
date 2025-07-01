@@ -9,14 +9,13 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
 
 public class PinjamPanel extends JPanel {
     private JTable tabelPinjam;
     private final Set<Integer> rowYangDibesarkan = new HashSet<>();
-    private JLabel labelKeterangan;
     private String currentFilter = null;
-
-    private TableRowSorter<DefaultTableModel> sorter; // Untuk search
+    private TableRowSorter<DefaultTableModel> sorter;
 
     // Status konstanta
     private static final String STATUS_DIPINJAM = "Dipinjam";
@@ -47,11 +46,9 @@ public class PinjamPanel extends JPanel {
             if (STATUS_DIPINJAM.equals(currentFilter)) {
                 currentFilter = null;
                 loadData(null);
-                updateKeterangan("Menampilkan semua data pinjaman");
             } else {
                 currentFilter = STATUS_DIPINJAM;
                 loadData(currentFilter);
-                updateKeterangan("Data buku yang sedang dipinjam");
             }
         });
 
@@ -59,31 +56,20 @@ public class PinjamPanel extends JPanel {
             if (STATUS_DIKEMBALIKAN.equals(currentFilter)) {
                 currentFilter = null;
                 loadData(null);
-                updateKeterangan("Menampilkan semua data pinjaman");
             } else {
                 currentFilter = STATUS_DIKEMBALIKAN;
                 loadData(currentFilter);
-                updateKeterangan("Data buku yang sudah dikembalikan");
             }
         });
 
         panelKiri.add(btnPinjam);
         panelKiri.add(btnKembali);
 
-        // Label kanan
-        labelKeterangan = new JLabel(" ");
-        labelKeterangan.setHorizontalAlignment(SwingConstants.RIGHT);
-        styleLabelInfo(labelKeterangan);
-
-        JPanel panelKanan = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        panelKanan.add(labelKeterangan);
-
+        // Tambahkan panel kiri saja (tanpa label keterangan)
         panelBawah.add(panelKiri, BorderLayout.WEST);
-        panelBawah.add(panelKanan, BorderLayout.EAST);
         add(panelBawah, BorderLayout.SOUTH);
 
         loadData(null);
-        updateKeterangan("Menampilkan semua data pinjaman");
     }
 
     public void search(String keyword) {
@@ -92,62 +78,49 @@ public class PinjamPanel extends JPanel {
         }
     }
 
-    private void styleLabelInfo(JLabel... labels) {
-        for (JLabel label : labels) {
-            label.setFont(new Font("Segoe UI", Font.BOLD, 16));
-            label.setForeground(new Color(30, 30, 30));
-        }
-    }
-
-    private void updateKeterangan(String teks) {
-        labelKeterangan.setText(teks + ": " + tabelPinjam.getRowCount());
-    }
-
-    void loadData(String filterKeterangan) {
+    void loadData(String filterStatus) {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
             "No", "Kode Buku", "NIM", "Nama", "Judul Buku",
-            "Waktu Pinjam", "Waktu Kembali", "Denda", "Keterangan"
+            "Waktu Pinjam", "Waktu Kembali", "Denda", "Status"
         });
 
         try (Connection conn = DBConnection.connect()) {
-            boolean pakaiFilter = filterKeterangan != null && !filterKeterangan.trim().isEmpty();
-
-            String sql = "SELECT kode_buku, nim, nama, judul_buku, waktu_pinjam, waktu_kembali, denda, keterangan FROM pinjaman";
-            if (pakaiFilter) {
-                sql += " WHERE keterangan = ?";
+            String sql = "SELECT kode_buku, nim, nama, judul_buku, waktu_pinjam, waktu_kembali, denda FROM pinjaman";
+            if (STATUS_DIPINJAM.equals(filterStatus)) {
+                sql += " WHERE waktu_kembali IS NULL";
+            } else if (STATUS_DIKEMBALIKAN.equals(filterStatus)) {
+                sql += " WHERE waktu_kembali IS NOT NULL";
             }
             sql += " ORDER BY waktu_pinjam DESC";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
-            if (pakaiFilter) {
-                stmt.setString(1, filterKeterangan);
-            }
-
             ResultSet rs = stmt.executeQuery();
+
             NumberFormat formatRupiah = NumberFormat.getNumberInstance(new Locale("id", "ID"));
             int no = 1;
 
             while (rs.next()) {
                 String waktuPinjam = WaktuFormatter.format(rs.getTimestamp("waktu_pinjam"));
-                String waktuKembali = rs.getTimestamp("waktu_kembali") != null
-                        ? WaktuFormatter.format(rs.getTimestamp("waktu_kembali"))
+                Timestamp kembaliTS = rs.getTimestamp("waktu_kembali");
+                String waktuKembali = (kembaliTS != null)
+                        ? WaktuFormatter.format(kembaliTS)
                         : "-";
                 double dendaRaw = rs.getDouble("denda");
                 String dendaFormatted = formatRupiah.format(dendaRaw);
 
-                String keterangan = rs.getString("keterangan");
+                String status = (kembaliTS == null) ? "Dipinjam" : "Dikembalikan";
 
                 model.addRow(new Object[]{
-                        no++,
-                        rs.getString("kode_buku"),
-                        rs.getString("nim"),
-                        rs.getString("nama"),
-                        rs.getString("judul_buku"),
-                        waktuPinjam,
-                        waktuKembali,
-                        dendaFormatted,
-                        keterangan
+                    no++,
+                    rs.getString("kode_buku"),
+                    rs.getString("nim"),
+                    rs.getString("nama"),
+                    rs.getString("judul_buku"),
+                    waktuPinjam,
+                    waktuKembali,
+                    dendaFormatted,
+                    status
                 });
             }
 
@@ -162,8 +135,8 @@ public class PinjamPanel extends JPanel {
 
             tabelPinjam.getColumnModel().getColumn(0).setPreferredWidth(40);
 
-            int[] centerBefore = {0, 7};       // No, Denda
-            int[] centerAfter = {5, 6, 7};     // Waktu Pinjam, Waktu Kembali, Denda
+            int[] centerBefore = {0, 2, 5, 6, 7};
+            int[] centerAfter = {5, 6, 7};
             TableStyler.setTabelStyle(tabelPinjam, rowYangDibesarkan, 24, centerBefore, centerAfter);
 
         } catch (Exception e) {
