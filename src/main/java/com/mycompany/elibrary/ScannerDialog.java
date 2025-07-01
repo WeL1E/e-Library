@@ -27,6 +27,7 @@ public class ScannerDialog extends JDialog {
     public ScannerDialog(JFrame parent) {
         super(parent, "e - Library | Scanner", true);
         setSize(700, 550);
+        setResizable(false);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
 

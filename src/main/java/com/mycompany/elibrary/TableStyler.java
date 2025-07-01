@@ -13,27 +13,32 @@ public class TableStyler {
         tabel.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 18));
         tabel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabel.setFillsViewportHeight(true);
+        Color headerLineColor = new Color(225, 225, 225);
+        tabel.setShowHorizontalLines(true);
+        tabel.setShowVerticalLines(true);
+        tabel.setGridColor(headerLineColor);
 
         TableModel model = tabel.getModel();
         for (int i = 0; i < model.getColumnCount(); i++) {
-            int col = i;
-            boolean isCenter = contains(centerColumns, col);
+            final int colIndex = i;
+            final int[] finalCenterColumns = centerColumns;
+            DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value,
+                        boolean isSelected, boolean hasFocus, int row, int column) {
 
-            tabel.getColumnModel().getColumn(col).setCellRenderer((table, value, isSelected, hasFocus, row, column) -> {
-                JLabel label = new JLabel();
-                String teks = value != null ? value.toString() : "";
-                label.setText(teks);
-                label.setToolTipText(teks);
-                label.setFont(table.getFont());
-                label.setOpaque(true);
-                label.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-                label.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-                label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-                label.setVerticalAlignment(SwingConstants.CENTER);
-                label.setHorizontalAlignment(isCenter ? SwingConstants.CENTER : SwingConstants.LEADING);
+                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-                return label;
-            });
+                    setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, table.getGridColor()));
+                    setHorizontalAlignment(TableStyler.contains(finalCenterColumns, column) ? SwingConstants.CENTER : SwingConstants.LEFT);
+                    setVerticalAlignment(SwingConstants.CENTER);
+                    setToolTipText(value != null ? value.toString() : "");
+
+                    return this;
+                }
+            };
+
+            tabel.getColumnModel().getColumn(i).setCellRenderer(renderer);
         }
     }
 

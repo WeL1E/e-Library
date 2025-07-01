@@ -81,7 +81,6 @@
                       <Component id="btnAktivitas" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnScan" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnPinjam" alignment="0" max="32767" attributes="0"/>
-                      <Component id="btnCariBuku" alignment="0" max="32767" attributes="0"/>
                       <Component id="btnLogout" alignment="0" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace pref="9" max="32767" attributes="0"/>
@@ -100,10 +99,8 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnPinjam" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="btnCariBuku" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnLogout" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="8" max="32767" attributes="0"/>
+                  <EmptySpace pref="41" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -123,14 +120,6 @@
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPinjamActionPerformed"/>
-          </Events>
-        </Component>
-        <Component class="javax.swing.JButton" name="btnCariBuku">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Cari buku"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCariBukuActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JButton" name="btnLogout">

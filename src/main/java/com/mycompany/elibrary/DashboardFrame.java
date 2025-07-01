@@ -90,7 +90,6 @@ public class DashboardFrame extends javax.swing.JFrame {
             btnAktivitas,
             btnManajemenBuku,
             btnPinjam, // pinjam & kembali
-            btnCariBuku,
             btnLogout
         };
 
@@ -102,7 +101,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         btnManajemenBuku.addActionListener(e -> tampilkanManajemenBuku());
         // Pengaturan JFrame
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setTitle("e - library | Dashboard");
+        setTitle("e - library | Dashboard/Aktivitas");
         setResizable(false);
         MainPanel.setLayout(new CardLayout());
 
@@ -204,7 +203,6 @@ public class DashboardFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         btnAktivitas = new javax.swing.JButton();
         btnPinjam = new javax.swing.JButton();
-        btnCariBuku = new javax.swing.JButton();
         btnLogout = new javax.swing.JButton();
         btnScan = new javax.swing.JButton();
         btnManajemenBuku = new javax.swing.JButton();
@@ -230,13 +228,6 @@ public class DashboardFrame extends javax.swing.JFrame {
         btnPinjam.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnPinjamActionPerformed(evt);
-            }
-        });
-
-        btnCariBuku.setText("Cari buku");
-        btnCariBuku.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCariBukuActionPerformed(evt);
             }
         });
 
@@ -274,7 +265,6 @@ public class DashboardFrame extends javax.swing.JFrame {
                     .addComponent(btnAktivitas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnScan, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnPinjam, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnCariBuku, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnLogout, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(9, Short.MAX_VALUE))
         );
@@ -290,10 +280,8 @@ public class DashboardFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnPinjam)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnCariBuku)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnLogout)
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout MainPanelLayout = new javax.swing.GroupLayout(MainPanel);
@@ -378,11 +366,6 @@ public class DashboardFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnCariBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCariBukuActionPerformed
-        // TODO add your handling code here:
-        lblTotalBuku.setVisible(false);
-    }//GEN-LAST:event_btnCariBukuActionPerformed
-
     public void refreshTransaksiPanel() {
         MainPanel.removeAll();
         MainPanel.add(new PinjamPanel()); // atau nama panel transaksi kamu
@@ -392,6 +375,7 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
         // TODO add your handling code here:
+        setTitle("e - library | Dashboard/Pinjam & Kembali");
         lblTotalBuku.setVisible(false);
         pinjamPanel = new PinjamPanel();
         MainPanel.removeAll();
@@ -427,12 +411,14 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnManajemenBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenBukuActionPerformed
         // TODO add your handling code here:
+        setTitle("e - library | Dashboard/Manajemen Buku");
         lblTotalBuku.setVisible(false);
         tampilkanManajemenBuku();
     }//GEN-LAST:event_btnManajemenBukuActionPerformed
 
     private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
         // TODO add your handling code here:
+        setTitle("e - library | Dashboard/Aktivitas");
         lblTotalBuku.setVisible(false);
         tampilkanAktivitas();
     }//GEN-LAST:event_btnAktivitasActionPerformed
@@ -485,7 +471,6 @@ public class DashboardFrame extends javax.swing.JFrame {
     private javax.swing.JPanel MainPanel;
     private javax.swing.JPanel PanelInfoAtas;
     private javax.swing.JButton btnAktivitas;
-    private javax.swing.JButton btnCariBuku;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnManajemenBuku;
     private javax.swing.JButton btnPinjam;
