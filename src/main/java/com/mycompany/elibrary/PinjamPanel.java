@@ -8,78 +8,168 @@ import java.text.NumberFormat;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import javax.swing.table.TableRowSorter;
 
 public class PinjamPanel extends JPanel {
-    private JTable tabel;
-    private JScrollPane scrollPane;
+    private JTable tabelPinjam;
     private final Set<Integer> rowYangDibesarkan = new HashSet<>();
+    private JLabel labelKeterangan;
+    private String currentFilter = null;
+
+    private TableRowSorter<DefaultTableModel> sorter; // Untuk search
+
+    // Status konstanta
+    private static final String STATUS_DIPINJAM = "Dipinjam";
+    private static final String STATUS_DIKEMBALIKAN = "Dikembalikan";
 
     public PinjamPanel() {
         setLayout(new BorderLayout());
 
-        tabel = new JTable();
-        scrollPane = new JScrollPane(tabel);
+        tabelPinjam = new JTable() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        JScrollPane scrollPane = new JScrollPane(tabelPinjam);
         add(scrollPane, BorderLayout.CENTER);
 
-        loadData();
+        // Panel bawah
+        JPanel panelBawah = new JPanel(new BorderLayout());
+
+        // Tombol kiri
+        JPanel panelKiri = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton btnPinjam = new JButton("📚 Pinjam");
+        JButton btnKembali = new JButton("📤 Kembali");
+
+        btnPinjam.addActionListener(e -> {
+            if (STATUS_DIPINJAM.equals(currentFilter)) {
+                currentFilter = null;
+                loadData(null);
+                updateKeterangan("Menampilkan semua data pinjaman");
+            } else {
+                currentFilter = STATUS_DIPINJAM;
+                loadData(currentFilter);
+                updateKeterangan("Data buku yang sedang dipinjam");
+            }
+        });
+
+        btnKembali.addActionListener(e -> {
+            if (STATUS_DIKEMBALIKAN.equals(currentFilter)) {
+                currentFilter = null;
+                loadData(null);
+                updateKeterangan("Menampilkan semua data pinjaman");
+            } else {
+                currentFilter = STATUS_DIKEMBALIKAN;
+                loadData(currentFilter);
+                updateKeterangan("Data buku yang sudah dikembalikan");
+            }
+        });
+
+        panelKiri.add(btnPinjam);
+        panelKiri.add(btnKembali);
+
+        // Label kanan
+        labelKeterangan = new JLabel(" ");
+        labelKeterangan.setHorizontalAlignment(SwingConstants.RIGHT);
+        styleLabelInfo(labelKeterangan);
+
+        JPanel panelKanan = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelKanan.add(labelKeterangan);
+
+        panelBawah.add(panelKiri, BorderLayout.WEST);
+        panelBawah.add(panelKanan, BorderLayout.EAST);
+        add(panelBawah, BorderLayout.SOUTH);
+
+        loadData(null);
+        updateKeterangan("Menampilkan semua data pinjaman");
     }
 
-    private void loadData() {
+    public void search(String keyword) {
+        if (sorter != null) {
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
+        }
+    }
+
+    private void styleLabelInfo(JLabel... labels) {
+        for (JLabel label : labels) {
+            label.setFont(new Font("Segoe UI", Font.BOLD, 16));
+            label.setForeground(new Color(30, 30, 30));
+        }
+    }
+
+    private void updateKeterangan(String teks) {
+        labelKeterangan.setText(teks + ": " + tabelPinjam.getRowCount());
+    }
+
+    private void loadData(String filterKeterangan) {
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[]{
+            "No", "Kode Buku", "NIM", "Nama", "Judul Buku",
+            "Waktu Pinjam", "Waktu Kembali", "Denda", "Keterangan"
+        });
+
         try (Connection conn = DBConnection.connect()) {
-            // 🔁 Tambahkan kolom "nama" di SQL
-            String sql = "SELECT kode_buku, nim, nama, judul_buku, waktu_pinjam, waktu_kembali, denda, keterangan FROM pinjaman ORDER BY waktu_pinjam DESC";
+            String sql = "SELECT kode_buku, nim, nama, judul_buku, waktu_pinjam, waktu_kembali, denda, keterangan FROM pinjaman";
+            if (filterKeterangan != null) {
+                sql += " WHERE keterangan = ?";
+            }
+            sql += " ORDER BY waktu_pinjam DESC";
+
             PreparedStatement stmt = conn.prepareStatement(sql);
+            if (filterKeterangan != null) {
+                stmt.setString(1, filterKeterangan);
+            }
+
             ResultSet rs = stmt.executeQuery();
-
-            // 🔁 Tambahkan "Nama" di header kolom
-            DefaultTableModel model = new DefaultTableModel(
-                new String[]{"Kode Buku", "NIM", "Nama", "Judul Buku", "Waktu Pinjam", "Waktu Kembali", "Denda", "Keterangan"}, 0
-            ) {
-                @Override
-                public boolean isCellEditable(int row, int column) {
-                    return false;
-                }
-            };
-
             NumberFormat formatRupiah = NumberFormat.getNumberInstance(new Locale("id", "ID"));
+            int no = 1;
 
             while (rs.next()) {
-                String kodeBuku = rs.getString("kode_buku");
-                String nim = rs.getString("nim");
-                String nama = rs.getString("nama"); // ✅ Ambil nama mahasiswa
-                String judul = rs.getString("judul_buku");
                 String waktuPinjam = WaktuFormatter.format(rs.getTimestamp("waktu_pinjam"));
                 String waktuKembali = rs.getTimestamp("waktu_kembali") != null
-                    ? WaktuFormatter.format(rs.getTimestamp("waktu_kembali"))
-                    : "-";
+                        ? WaktuFormatter.format(rs.getTimestamp("waktu_kembali"))
+                        : "-";
                 double dendaRaw = rs.getDouble("denda");
-
                 String dendaFormatted = formatRupiah.format(dendaRaw);
 
                 String keterangan = rs.getString("keterangan");
-                if (keterangan == null || keterangan.equalsIgnoreCase("Dipinjam")) {
+                if (keterangan == null || keterangan.equalsIgnoreCase(STATUS_DIPINJAM)) {
                     keterangan = "Pinjam";
                 }
 
                 model.addRow(new Object[]{
-                    kodeBuku,
-                    nim,
-                    nama,
-                    judul,
-                    waktuPinjam,
-                    waktuKembali,
-                    dendaFormatted,
-                    keterangan
+                        no++,
+                        rs.getString("kode_buku"),
+                        rs.getString("nim"),
+                        rs.getString("nama"),
+                        rs.getString("judul_buku"),
+                        waktuPinjam,
+                        waktuKembali,
+                        dendaFormatted,
+                        keterangan
                 });
             }
 
-            tabel.setModel(model);
+            tabelPinjam.setModel(model);
 
-            TabelStyler.setTabelStyle(tabel, rowYangDibesarkan, 35);
-            TabelStyler.setCenterAlignment(tabel, 1, 2, 4, 5, 6);
+            // TableRowSorter hanya dibuat sekali dan model-nya diperbarui
+            if (sorter == null) {
+                sorter = new TableRowSorter<>(model);
+                tabelPinjam.setRowSorter(sorter);
+            } else {
+                sorter.setModel(model);
+            }
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            tabelPinjam.getColumnModel().getColumn(0).setPreferredWidth(40);
+
+            int[] centerBefore = {0, 7};       // No, Denda
+            int[] centerAfter = {5, 6, 7};     // Waktu Pinjam, Waktu Kembali, Denda
+            TableStyler.setTabelStyle(tabelPinjam, rowYangDibesarkan, 24, centerBefore, centerAfter);
+
+        } catch (Exception e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Gagal memuat data pinjaman.");
         }
     }

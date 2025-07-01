@@ -2,17 +2,22 @@ package com.mycompany.elibrary;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.RowFilter;
 
 public class AktivitasPanel extends JPanel {
 
+    private final JTextField txtSearch;
     private JTable tabelAktivitas;
     private final Set<Integer> rowYangDibesarkan = new HashSet<>();
+    private TableRowSorter<DefaultTableModel> sorter;
 
-    public AktivitasPanel() {
+    public AktivitasPanel(JTextField txtSearchExternal) {
+        this.txtSearch = txtSearchExternal;
         setLayout(new BorderLayout());
 
         tabelAktivitas = new JTable() {
@@ -28,15 +33,17 @@ public class AktivitasPanel extends JPanel {
         loadDataAktivitas();
     }
 
+    public void search(String keyword) {
+        if (sorter != null) {
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + keyword));
+        }
+    }
+
     public void loadDataAktivitas() {
         DefaultTableModel model = new DefaultTableModel();
-        model.addColumn("No");
-        model.addColumn("NIM");
-        model.addColumn("Nama");
-        model.addColumn("Prodi");
-        model.addColumn("Check in");
-        model.addColumn("Check out");
-        model.addColumn("Keterangan");
+        model.setColumnIdentifiers(new String[]{
+            "No", "NIM", "Nama", "Prodi", "Check in", "Check out", "Keterangan"
+        });
 
         try (Connection conn = DBConnection.connect()) {
             String sql = "SELECT nim, nama_mahasiswa, prodi, waktu_masuk, waktu_keluar, keterangan FROM aktivitas ORDER BY waktu_masuk DESC";
@@ -60,12 +67,18 @@ public class AktivitasPanel extends JPanel {
 
             tabelAktivitas.setModel(model);
 
-            // "No" kecil
+            if (sorter == null) {
+                sorter = new TableRowSorter<>(model);
+                tabelAktivitas.setRowSorter(sorter);
+            } else {
+                sorter.setModel(model);
+            }
+
             tabelAktivitas.getColumnModel().getColumn(0).setPreferredWidth(40);
 
-            // 🔧 Terapkan styling dari TabelStyler
-            TabelStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 30, true);
-            TabelStyler.setCenterAlignment(tabelAktivitas, 0, 4, 5); // "No", waktu masuk & keluar
+            int[] centerBefore = {0, 4, 5}; // No, Check in, Check out
+            int[] centerAfter = {4, 5};    // Check in, Check out
+            TableStyler.setTabelStyle(tabelAktivitas, rowYangDibesarkan, 24, centerBefore, centerAfter);
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Gagal memuat data aktivitas: " + e.getMessage());

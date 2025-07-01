@@ -24,6 +24,8 @@ import javax.swing.SwingUtilities;
  * @author aldor
  */
 public class DashboardFrame extends javax.swing.JFrame {
+    private ManajemenBukuPanel manajemenBukuPanel;
+    private AktivitasPanel aktivitasPanel;
     private PinjamPanel pinjamPanel;
     public DashboardFrame(){
         this("DASHBOARD");
@@ -50,17 +52,26 @@ public class DashboardFrame extends javax.swing.JFrame {
 
             @Override
             public void keyReleased(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String keyword = txtSearch.getText().trim();
+                String keyword = txtSearch.getText().trim().toLowerCase();
 
-                    // Tampilkan panel manajemen buku untuk hasil pencarian
-                    MainPanel.removeAll();
-                    new ManajemenBukuPanel(txtSearch, lblTotalBuku);
-                    MainPanel.revalidate();
-                    MainPanel.repaint();
-
-                    lblTotalBuku.setVisible(true);
-                    tampilkanTotalBuku();
+                switch (panelAktif) {
+                    case "Aktivitas":
+                        if (aktivitasPanel != null) {
+                            aktivitasPanel.search(keyword);
+                        }
+                        break;
+                    case "Pinjam":
+                        if (pinjamPanel != null) {
+                            pinjamPanel.search(keyword);
+                        }
+                        break;
+                    case "ManajemenBuku":
+                        if (manajemenBukuPanel != null) {
+                            manajemenBukuPanel.search(keyword);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
         });
@@ -85,7 +96,9 @@ public class DashboardFrame extends javax.swing.JFrame {
         for (JButton btn : semuaButton) {
             btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
         }
-
+        btnPinjam.addActionListener(e -> tampilkanPanelPinjam());
+        btnAktivitas.addActionListener(e -> tampilkanAktivitas());
+        btnManajemenBuku.addActionListener(e -> tampilkanManajemenBuku());
         // Pengaturan JFrame
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setTitle("e - library | Dashboard");
@@ -103,21 +116,35 @@ public class DashboardFrame extends javax.swing.JFrame {
     }
 
     public void refreshAktivitasPanel() {
+        tampilkanAktivitas();
+    }
+    
+    private void tampilkanManajemenBuku() {
+        if (manajemenBukuPanel == null) {
+            manajemenBukuPanel = new ManajemenBukuPanel(txtSearch, lblTotalBuku);
+        }
         MainPanel.removeAll();
-        MainPanel.add(new AktivitasPanel());
+        MainPanel.add(manajemenBukuPanel);
+        MainPanel.revalidate();
+        MainPanel.repaint();
+        lblTotalBuku.setVisible(true);
+        panelAktif = "ManajemenBuku";
+
+        // Jalankan search sesuai teks yang sudah ada
+        String keyword = txtSearch.getText().trim().toLowerCase();
+        manajemenBukuPanel.search(keyword);
+    }
+
+    private void tampilkanAktivitas() {
+        aktivitasPanel = new AktivitasPanel(txtSearch);
+        MainPanel.removeAll();
+        MainPanel.add(aktivitasPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
         lblTotalBuku.setVisible(false);
+        panelAktif = "Aktivitas";
     }
-    
-    private void tampilkanAktivitas(){
-        MainPanel.removeAll();
-        MainPanel.add(new AktivitasPanel());
-        MainPanel.revalidate();
-        MainPanel.repaint();
-        lblTotalBuku.setVisible(false);
-    }
-    
+
     public void tampilkanPanelPinjam() {
         if (pinjamPanel == null) {
             pinjamPanel = new PinjamPanel();
@@ -126,9 +153,13 @@ public class DashboardFrame extends javax.swing.JFrame {
         MainPanel.add(pinjamPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
-        lblTotalBuku.setVisible(false);
+        lblTotalBuku.setVisible(true);
+        panelAktif = "Pinjam";
     }
+
     
+    private String panelAktif = ""; // untuk melacak panel aktif saat ini
+
     private void styleLabelInfo(JLabel target, JLabel referensi){
         target.setFont(referensi.getFont());
         target.setForeground(referensi.getForeground());
@@ -137,19 +168,20 @@ public class DashboardFrame extends javax.swing.JFrame {
     
     private void tampilkanTotalBuku(){
         try (Connection conn = DBConnection.connect()){
-            String sql = "SELECT COUNT(*) FROM buku";
+            String sql = "SELECT SUM(tersedia) FROM buku";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()){
                 int total = rs.getInt(1);
-                lblTotalBuku.setText("Total Buku: " + total);
+                lblTotalBuku.setText("Total Buku Tersedia: " + total);
                 lblTotalBuku.setVisible(true);
             }
-        }catch (SQLException e){
+        } catch (SQLException e){
             lblTotalBuku.setText("Gagal memuat data buku");
             System.err.println("Error: " + e.getMessage());
         }
     }
+
     
     public PinjamPanel getPinjamPanel() {
     return pinjamPanel;
@@ -303,7 +335,7 @@ public class DashboardFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel2.setText("Cari Buku:");
+        jLabel2.setText("Cari Data:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -355,11 +387,12 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnPinjamActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPinjamActionPerformed
         // TODO add your handling code here:
-        lblTotalBuku.setVisible(false);
+        pinjamPanel = new PinjamPanel();
         MainPanel.removeAll();
-        MainPanel.add(new PinjamPanel());
+        MainPanel.add(pinjamPanel);
         MainPanel.revalidate();
         MainPanel.repaint();
+        panelAktif = "Pinjam";
     }//GEN-LAST:event_btnPinjamActionPerformed
 
     private void btnScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnScanActionPerformed
@@ -388,24 +421,12 @@ public class DashboardFrame extends javax.swing.JFrame {
 
     private void btnManajemenBukuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManajemenBukuActionPerformed
         // TODO add your handling code here:
-        MainPanel.removeAll();
-        MainPanel.add(new ManajemenBukuPanel(txtSearch, lblTotalBuku));
-        MainPanel.revalidate();
-        MainPanel.repaint();
-
-        lblTotalBuku.setVisible(true);
-        tampilkanTotalBuku();
+        tampilkanManajemenBuku();
     }//GEN-LAST:event_btnManajemenBukuActionPerformed
 
     private void btnAktivitasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAktivitasActionPerformed
         // TODO add your handling code here:
         tampilkanAktivitas();
-        MainPanel.removeAll();
-        MainPanel.add(new AktivitasPanel());
-        MainPanel.revalidate();
-        MainPanel.repaint();
-        
-        lblTotalBuku.setVisible(false);
     }//GEN-LAST:event_btnAktivitasActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
