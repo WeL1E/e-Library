@@ -103,7 +103,7 @@ public class PinjamPanel extends JPanel {
         labelKeterangan.setText(teks + ": " + tabelPinjam.getRowCount());
     }
 
-    private void loadData(String filterKeterangan) {
+    void loadData(String filterKeterangan) {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
             "No", "Kode Buku", "NIM", "Nama", "Judul Buku",
@@ -111,14 +111,16 @@ public class PinjamPanel extends JPanel {
         });
 
         try (Connection conn = DBConnection.connect()) {
+            boolean pakaiFilter = filterKeterangan != null && !filterKeterangan.trim().isEmpty();
+
             String sql = "SELECT kode_buku, nim, nama, judul_buku, waktu_pinjam, waktu_kembali, denda, keterangan FROM pinjaman";
-            if (filterKeterangan != null) {
+            if (pakaiFilter) {
                 sql += " WHERE keterangan = ?";
             }
             sql += " ORDER BY waktu_pinjam DESC";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
-            if (filterKeterangan != null) {
+            if (pakaiFilter) {
                 stmt.setString(1, filterKeterangan);
             }
 
@@ -135,9 +137,6 @@ public class PinjamPanel extends JPanel {
                 String dendaFormatted = formatRupiah.format(dendaRaw);
 
                 String keterangan = rs.getString("keterangan");
-                if (keterangan == null || keterangan.equalsIgnoreCase(STATUS_DIPINJAM)) {
-                    keterangan = "Pinjam";
-                }
 
                 model.addRow(new Object[]{
                         no++,
@@ -154,7 +153,6 @@ public class PinjamPanel extends JPanel {
 
             tabelPinjam.setModel(model);
 
-            // TableRowSorter hanya dibuat sekali dan model-nya diperbarui
             if (sorter == null) {
                 sorter = new TableRowSorter<>(model);
                 tabelPinjam.setRowSorter(sorter);

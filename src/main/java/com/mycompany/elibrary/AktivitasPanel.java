@@ -67,12 +67,9 @@ public class AktivitasPanel extends JPanel {
 
             tabelAktivitas.setModel(model);
 
-            if (sorter == null) {
-                sorter = new TableRowSorter<>(model);
-                tabelAktivitas.setRowSorter(sorter);
-            } else {
-                sorter.setModel(model);
-            }
+            // ✅ SOLUSI: selalu set RowSorter baru tiap kali data di-load
+            sorter = new TableRowSorter<>(model);
+            tabelAktivitas.setRowSorter(sorter);
 
             tabelAktivitas.getColumnModel().getColumn(0).setPreferredWidth(40);
 

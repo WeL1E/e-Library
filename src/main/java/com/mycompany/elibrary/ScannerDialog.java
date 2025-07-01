@@ -87,7 +87,6 @@ public class ScannerDialog extends JDialog {
                             } else if (isValidKodeBuku(hasilScan)) {
                                 isWebcamRunning = false;
                                 webcam.close();
-
                                 SwingUtilities.invokeLater(() -> {
                                     String nim = ambilNIMDariAktivitasHariIni();
                                     if (nim != null && isValidNIM(nim)) {
@@ -251,9 +250,10 @@ public class ScannerDialog extends JDialog {
             }
 
             SwingUtilities.invokeLater(() -> {
-                if (getParent() instanceof DashboardFrame dashboard) {
-                    dashboard.refreshAktivitasPanel(); // ✅ tampilkan aktivitas
-                }
+                if (getParent() instanceof DashboardFrame) {
+                DashboardFrame dashboard = (DashboardFrame) getParent();
+                dashboard.refreshAktivitasPanel();
+            }
                 dispose();
             });
         } catch (Exception ex) {
@@ -288,7 +288,6 @@ public class ScannerDialog extends JDialog {
                 return;
             }
 
-            // Cek apakah buku sedang dipinjam oleh mahasiswa yang sama
             String sql = "SELECT * FROM pinjaman WHERE nim = ? AND kode_buku = ? AND waktu_pinjam IS NOT NULL AND waktu_kembali IS NULL";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, nim);
@@ -296,7 +295,6 @@ public class ScannerDialog extends JDialog {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // ➕ Kembalikan buku
                 Timestamp waktuPinjam = rs.getTimestamp("waktu_pinjam");
                 long days = ChronoUnit.DAYS.between(waktuPinjam.toLocalDateTime().toLocalDate(), LocalDate.now());
                 int denda = (int) Math.max(0, days - 7) * 500;
@@ -307,7 +305,6 @@ public class ScannerDialog extends JDialog {
                 updateStmt.setInt(2, rs.getInt("id"));
                 updateStmt.executeUpdate();
 
-                // Tambah stok tersedia
                 String updateTersediaSQL = "UPDATE buku SET tersedia = tersedia + 1 WHERE kode_buku = ?";
                 PreparedStatement updateTersediaStmt = conn.prepareStatement(updateTersediaSQL);
                 updateTersediaStmt.setString(1, kodeBuku);
@@ -315,7 +312,6 @@ public class ScannerDialog extends JDialog {
 
                 JOptionPane.showMessageDialog(this, "✅ Buku dikembalikan. Denda: Rp" + String.format("%,d", denda).replace(',', '.'));
             } else {
-                // 🔁 Cek stok tersedia
                 String cekStok = "SELECT tersedia FROM buku WHERE kode_buku = ?";
                 PreparedStatement cekStokStmt = conn.prepareStatement(cekStok);
                 cekStokStmt.setString(1, kodeBuku);
@@ -328,7 +324,6 @@ public class ScannerDialog extends JDialog {
                     }
                 }
 
-                // ➖ Masukkan peminjaman baru
                 String insert = "INSERT INTO pinjaman (nim, nama, kode_buku, judul_buku, waktu_pinjam, keterangan) VALUES (?, ?, ?, ?, NOW(), 'Dipinjam')";
                 PreparedStatement insertStmt = conn.prepareStatement(insert);
                 insertStmt.setString(1, nim);
@@ -337,7 +332,6 @@ public class ScannerDialog extends JDialog {
                 insertStmt.setString(4, judul);
                 insertStmt.executeUpdate();
 
-                // Kurangi stok tersedia
                 String updateTersediaSQL = "UPDATE buku SET tersedia = tersedia - 1 WHERE kode_buku = ? AND tersedia > 0";
                 PreparedStatement updateTersediaStmt = conn.prepareStatement(updateTersediaSQL);
                 updateTersediaStmt.setString(1, kodeBuku);
@@ -347,8 +341,10 @@ public class ScannerDialog extends JDialog {
             }
 
             SwingUtilities.invokeLater(() -> {
-                if (getParent() instanceof DashboardFrame dashboard) {
-                    dashboard.tampilkanPanelPinjam(); // ✅ tampilkan pinjam
+                if (getParent() instanceof DashboardFrame) {
+                    DashboardFrame dashboard = (DashboardFrame) getParent();
+                    dashboard.tampilkanPanelPinjam();
+                    dashboard.getPinjamPanel().loadData("");
                 }
                 dispose();
             });
