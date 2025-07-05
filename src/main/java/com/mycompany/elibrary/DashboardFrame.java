@@ -185,8 +185,10 @@ public class DashboardFrame extends javax.swing.JFrame {
             System.err.println("Error: " + e.getMessage());
         }
     }
+    public ManajemenBukuPanel getManajemenBukuPanel() {
+    return manajemenBukuPanel;
+}
 
-    
     public PinjamPanel getPinjamPanel() {
     return pinjamPanel;
 }

@@ -55,7 +55,7 @@ public class ManajemenBukuPanel extends JPanel {
         }
     }
 
-    private void loadDataBuku() {
+    void loadDataBuku() {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
                 "No", "Kode Buku", "Judul", "Penulis", "Penerbit",
@@ -259,7 +259,7 @@ public class ManajemenBukuPanel extends JPanel {
         }
     }
 
-    private void tampilkanTotalBuku() {
+    void tampilkanTotalBuku() {
         try (Connection conn = DBConnection.connect()) {
             String sql = "SELECT SUM(stock) FROM buku";
             PreparedStatement stmt = conn.prepareStatement(sql);

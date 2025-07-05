@@ -88,12 +88,60 @@ public class ScannerDialog extends JDialog {
                             } else if (isValidKodeBuku(hasilScan)) {
                                 isWebcamRunning = false;
                                 webcam.close();
+
                                 SwingUtilities.invokeLater(() -> {
-                                    String nim = ambilNIMDariAktivitasHariIni();
-                                    if (nim != null && isValidNIM(nim)) {
-                                        prosesPeminjaman(nim, hasilScan);
-                                    } else {
-                                        showCooldownPopup("❌ NIM tidak valid atau tidak ditemukan.");
+                                    try (Connection conn = DBConnection.connect()) {
+                                        String sql = "SELECT nim, nama_mahasiswa FROM aktivitas WHERE DATE(waktu_masuk) = CURDATE() AND waktu_keluar IS NULL";
+                                        PreparedStatement stmt = conn.prepareStatement(sql);
+                                        ResultSet rs = stmt.executeQuery();
+
+                                        java.util.List<String> daftarNIM = new java.util.ArrayList<>();
+                                        java.util.Map<String, String> nimKeNama = new java.util.HashMap<>();
+
+                                        while (rs.next()) {
+                                            String nim = rs.getString("nim");
+                                            String nama = rs.getString("nama_mahasiswa");
+                                            daftarNIM.add(nim);
+                                            nimKeNama.put(nim, nama);
+                                        }
+
+                                        if (daftarNIM.isEmpty()) {
+                                            showCooldownPopup("❌ Tidak ada mahasiswa yang sedang berada di perpustakaan.");
+                                            return;
+                                        }
+
+                                        String selectedNIM;
+
+                                        if (daftarNIM.size() == 1) {
+                                            selectedNIM = daftarNIM.get(0);
+                                        } else {
+                                            String[] pilihan = daftarNIM.stream()
+                                                    .map(nim -> nim + " - " + nimKeNama.get(nim))
+                                                    .toArray(String[]::new);
+
+                                            String selected = (String) JOptionPane.showInputDialog(
+                                                    this,
+                                                    "Pilih NIM yang sedang berada di perpustakaan:",
+                                                    "Pilih Mahasiswa",
+                                                    JOptionPane.QUESTION_MESSAGE,
+                                                    null,
+                                                    pilihan,
+                                                    pilihan[0]
+                                            );
+
+                                            if (selected == null) return;
+                                            selectedNIM = selected.split(" - ")[0];
+                                        }
+
+                                        if (isValidNIM(selectedNIM)) {
+                                            prosesPeminjaman(selectedNIM, hasilScan);
+                                        } else {
+                                            showCooldownPopup("❌ NIM yang dipilih tidak valid.");
+                                        }
+
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
+                                        showCooldownPopup("❌ Terjadi kesalahan saat mengambil NIM dari aktivitas.");
                                     }
                                 });
                             } else {
@@ -167,53 +215,6 @@ public class ScannerDialog extends JDialog {
         isWebcamRunning = false;
     }
 
-    private String ambilNIMDariAktivitasHariIni() {
-        try (Connection conn = DBConnection.connect()) {
-            String sql = "SELECT nim, nama_mahasiswa FROM aktivitas WHERE DATE(waktu_masuk) = CURDATE() AND waktu_keluar IS NULL";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
-
-            java.util.List<String> daftarNIM = new java.util.ArrayList<>();
-            java.util.Map<String, String> nimKeNama = new java.util.HashMap<>();
-
-            while (rs.next()) {
-                String nim = rs.getString("nim");
-                String nama = rs.getString("nama_mahasiswa");
-                daftarNIM.add(nim);
-                nimKeNama.put(nim, nama);
-            }
-
-            if (daftarNIM.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "❌ Tidak ada mahasiswa yang sedang berada di perpustakaan.");
-                return null;
-            } else if (daftarNIM.size() == 1) {
-                return daftarNIM.get(0);
-            } else {
-                String[] pilihan = daftarNIM.stream()
-                        .map(nim -> nim + " - " + nimKeNama.get(nim))
-                        .toArray(String[]::new);
-
-                String selected = (String) JOptionPane.showInputDialog(
-                        this,
-                        "Pilih NIM yang sedang berada di perpustakaan:",
-                        "Pilih Mahasiswa",
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        pilihan,
-                        pilihan[0]
-                );
-
-                if (selected != null) {
-                    return selected.split(" - ")[0];
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "❌ Gagal mengambil data aktivitas.");
-        }
-        return null;
-    }
-
     private void prosesAbsensi(String nim, String kategori) {
         try (Connection conn = DBConnection.connect()) {
             String checkSQL = "SELECT * FROM aktivitas WHERE nim = ? AND DATE(waktu_masuk) = CURDATE() AND waktu_keluar IS NULL";
@@ -223,7 +224,7 @@ public class ScannerDialog extends JDialog {
 
             if (rs.next()) {
                 int idAktivitas = rs.getInt("id_aktivitas");
-                String updateSQL = "UPDATE aktivitas SET waktu_keluar = NOW() WHERE id_aktivitas = ?";
+                String updateSQL = "UPDATE aktivitas SET waktu_keluar = NOW(), keterangan = 'Keluar' WHERE id_aktivitas = ?";
                 PreparedStatement updateStmt = conn.prepareStatement(updateSQL);
                 updateStmt.setInt(1, idAktivitas);
                 updateStmt.executeUpdate();
@@ -242,117 +243,126 @@ public class ScannerDialog extends JDialog {
                     insertStmt.setString(1, nim);
                     insertStmt.setString(2, nama);
                     insertStmt.setString(3, prodi);
-                    insertStmt.setString(4, kategori);
+                    insertStmt.setString(4, "Masuk");
                     insertStmt.executeUpdate();
-                    JOptionPane.showMessageDialog(this, "✅ Masuk dicatat untuk NIM: " + nim, "Berhasil", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "✅ Masuk dicatat untuk NIM: " + nim);
                 } else {
                     JOptionPane.showMessageDialog(this, "❌ NIM tidak ditemukan.");
                 }
             }
 
-            SwingUtilities.invokeLater(() -> {
-                if (getParent() instanceof DashboardFrame) {
-                DashboardFrame dashboard = (DashboardFrame) getParent();
-                dashboard.refreshAktivitasPanel();
-            }
-                dispose();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Container parent = getParent();
+                    if (parent instanceof DashboardFrame) {
+                        DashboardFrame dashboard = (DashboardFrame) parent;
+                        dashboard.refreshAktivitasPanel();
+                    }
+                    dispose();
+                }
             });
+
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "❌ Terjadi kesalahan saat memproses absensi.");
         }
     }
 
-    private void prosesPeminjaman(String nim, String kodeBuku) {
+    private void prosesPeminjaman(final String nim, final String kodeBuku) {
         try (Connection conn = DBConnection.connect()) {
             String judul = null;
-            String sqlJudul = "SELECT judul_buku FROM buku WHERE kode_buku = ?";
-            PreparedStatement stmtJudul = conn.prepareStatement(sqlJudul);
+            PreparedStatement stmtJudul = conn.prepareStatement("SELECT judul_buku FROM buku WHERE kode_buku = ?");
             stmtJudul.setString(1, kodeBuku);
             ResultSet rsJudul = stmtJudul.executeQuery();
-            if (rsJudul.next()) judul = rsJudul.getString("judul_buku");
+            if (rsJudul.next()) {
+                judul = rsJudul.getString("judul_buku");
+            }
 
             if (judul == null || judul.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "❌ Judul buku tidak ditemukan untuk kode: " + kodeBuku);
+                JOptionPane.showMessageDialog(this, "❌ Judul buku tidak ditemukan.");
                 return;
             }
 
-            String namaMahasiswa = null;
-            String sqlNama = "SELECT nama FROM mahasiswa WHERE nim = ?";
-            PreparedStatement stmtNama = conn.prepareStatement(sqlNama);
+            String nama = null;
+            PreparedStatement stmtNama = conn.prepareStatement("SELECT nama FROM mahasiswa WHERE nim = ?");
             stmtNama.setString(1, nim);
             ResultSet rsNama = stmtNama.executeQuery();
-            if (rsNama.next()) namaMahasiswa = rsNama.getString("nama");
+            if (rsNama.next()) {
+                nama = rsNama.getString("nama");
+            }
 
-            if (namaMahasiswa == null || namaMahasiswa.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "❌ Nama mahasiswa tidak ditemukan untuk NIM: " + nim);
+            if (nama == null || nama.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "❌ Nama mahasiswa tidak ditemukan.");
                 return;
             }
 
-            String sql = "SELECT * FROM pinjaman WHERE nim = ? AND kode_buku = ? AND waktu_pinjam IS NOT NULL AND waktu_kembali IS NULL";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, nim);
-            stmt.setString(2, kodeBuku);
-            ResultSet rs = stmt.executeQuery();
+            String cekSQL = "SELECT * FROM pinjaman WHERE nim = ? AND kode_buku = ? AND waktu_kembali IS NULL";
+            PreparedStatement cekStmt = conn.prepareStatement(cekSQL);
+            cekStmt.setString(1, nim);
+            cekStmt.setString(2, kodeBuku);
+            ResultSet rs = cekStmt.executeQuery();
 
             if (rs.next()) {
                 Timestamp waktuPinjam = rs.getTimestamp("waktu_pinjam");
-                long days = ChronoUnit.DAYS.between(waktuPinjam.toLocalDateTime().toLocalDate(), LocalDate.now());
-                int denda = (int) Math.max(0, days - 7) * 500;
+                long hari = ChronoUnit.DAYS.between(waktuPinjam.toLocalDateTime().toLocalDate(), LocalDate.now());
+                int denda = (int) Math.max(0, hari - 7) * 500;
 
-                String update = "UPDATE pinjaman SET waktu_kembali = NOW(), denda = ?, keterangan = 'Dikembalikan' WHERE id = ?";
-                PreparedStatement updateStmt = conn.prepareStatement(update);
-                updateStmt.setInt(1, denda);
-                updateStmt.setInt(2, rs.getInt("id"));
-                updateStmt.executeUpdate();
+                PreparedStatement kembalikan = conn.prepareStatement("UPDATE pinjaman SET waktu_kembali = NOW(), denda = ?, keterangan = 'Dikembalikan' WHERE id = ?");
+                kembalikan.setInt(1, denda);
+                kembalikan.setInt(2, rs.getInt("id"));
+                kembalikan.executeUpdate();
 
-                String updateTersediaSQL = "UPDATE buku SET tersedia = tersedia + 1 WHERE kode_buku = ?";
-                PreparedStatement updateTersediaStmt = conn.prepareStatement(updateTersediaSQL);
-                updateTersediaStmt.setString(1, kodeBuku);
-                updateTersediaStmt.executeUpdate();
+                PreparedStatement tambahStok = conn.prepareStatement("UPDATE buku SET stock = stock + 1 WHERE kode_buku = ?");
+                tambahStok.setString(1, kodeBuku);
+                tambahStok.executeUpdate();
 
                 JOptionPane.showMessageDialog(this, "✅ Buku dikembalikan. Denda: Rp" + String.format("%,d", denda).replace(',', '.'));
             } else {
-                String cekStok = "SELECT tersedia FROM buku WHERE kode_buku = ?";
-                PreparedStatement cekStokStmt = conn.prepareStatement(cekStok);
-                cekStokStmt.setString(1, kodeBuku);
-                ResultSet rsStok = cekStokStmt.executeQuery();
-                if (rsStok.next()) {
-                    int tersedia = rsStok.getInt("tersedia");
-                    if (tersedia <= 0) {
-                        JOptionPane.showMessageDialog(this, "❌ Buku tidak tersedia untuk dipinjam.");
-                        return;
-                    }
+                PreparedStatement cekStok = conn.prepareStatement("SELECT stock FROM buku WHERE kode_buku = ?");
+                cekStok.setString(1, kodeBuku);
+                ResultSet rsStok = cekStok.executeQuery();
+                if (rsStok.next() && rsStok.getInt("stock") <= 0) {
+                    JOptionPane.showMessageDialog(this, "❌ Buku tidak tersedia.");
+                    return;
                 }
 
-                String insert = "INSERT INTO pinjaman (nim, nama, kode_buku, judul_buku, waktu_pinjam, keterangan) VALUES (?, ?, ?, ?, NOW(), 'Dipinjam')";
-                PreparedStatement insertStmt = conn.prepareStatement(insert);
-                insertStmt.setString(1, nim);
-                insertStmt.setString(2, namaMahasiswa);
-                insertStmt.setString(3, kodeBuku);
-                insertStmt.setString(4, judul);
-                insertStmt.executeUpdate();
+                PreparedStatement pinjam = conn.prepareStatement("INSERT INTO pinjaman (nim, nama, kode_buku, judul_buku, waktu_pinjam, keterangan) VALUES (?, ?, ?, ?, NOW(), 'Dipinjam')");
+                pinjam.setString(1, nim);
+                pinjam.setString(2, nama);
+                pinjam.setString(3, kodeBuku);
+                pinjam.setString(4, judul);
+                pinjam.executeUpdate();
 
-                String updateTersediaSQL = "UPDATE buku SET tersedia = tersedia - 1 WHERE kode_buku = ? AND tersedia > 0";
-                PreparedStatement updateTersediaStmt = conn.prepareStatement(updateTersediaSQL);
-                updateTersediaStmt.setString(1, kodeBuku);
-                updateTersediaStmt.executeUpdate();
+                PreparedStatement kurangStok = conn.prepareStatement("UPDATE buku SET stock = stock - 1 WHERE kode_buku = ?");
+                kurangStok.setString(1, kodeBuku);
+                kurangStok.executeUpdate();
 
-                JOptionPane.showMessageDialog(this, "✅ Buku dipinjamkan ke " + nim + " - " + namaMahasiswa);
+                JOptionPane.showMessageDialog(this, "✅ Buku dipinjamkan ke " + nim + " - " + nama);
             }
 
-            SwingUtilities.invokeLater(() -> {
-                if (getParent() instanceof DashboardFrame) {
-                    DashboardFrame dashboard = (DashboardFrame) getParent();
-                    dashboard.tampilkanPanelPinjam();
-                    dashboard.getPinjamPanel().loadData("");
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Container parent = getParent();
+                    if (parent instanceof DashboardFrame) {
+                        DashboardFrame dashboard = (DashboardFrame) parent;
+                        dashboard.tampilkanPanelPinjam();
+                        if (dashboard.getPinjamPanel() != null) {
+                            dashboard.getPinjamPanel().loadData("");
+                        }
+                        if (dashboard.getManajemenBukuPanel() != null) {
+                            dashboard.getManajemenBukuPanel().loadDataBuku();
+                            dashboard.getManajemenBukuPanel().tampilkanTotalBuku();
+                        }
+                    }
+                    dispose();
                 }
-                dispose();
             });
 
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "❌ Gagal memproses transaksi peminjaman.");
+            JOptionPane.showMessageDialog(this, "❌ Gagal memproses peminjaman.");
         }
     }
 
