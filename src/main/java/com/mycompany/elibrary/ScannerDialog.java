@@ -364,7 +364,7 @@ public class ScannerDialog extends JDialog {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "❌ Gagal memproses peminjaman.");
         }
-    }
+    }   
 
     @Override
     public void dispose() {
