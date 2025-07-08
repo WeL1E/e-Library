@@ -38,7 +38,7 @@ public class DashboardFrame extends javax.swing.JFrame {
         setUndecorated(false);
         initComponents();
 
-        // 🔇 Hilangkan suara beep saat txtSearch kosong + tekan tombol tertentu
+        // Hilangkan suara beep saat txtSearch kosong + tekan tombol tertentu
         txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {

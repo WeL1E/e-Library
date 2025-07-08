@@ -17,7 +17,6 @@ public class PinjamPanel extends JPanel {
     private String currentFilter = null;
     private TableRowSorter<DefaultTableModel> sorter;
 
-    // Status konstanta
     private static final String STATUS_DIPINJAM = "Dipinjam";
     private static final String STATUS_DIKEMBALIKAN = "Dikembalikan";
 

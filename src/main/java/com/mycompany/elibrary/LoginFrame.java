@@ -174,14 +174,14 @@ public class LoginFrame extends javax.swing.JFrame {
     private void txtPasswordKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPasswordKeyPressed
         // TODO add your handling code here:
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-        login(); // Sama seperti klik tombol login
+        login();
         }
     }//GEN-LAST:event_txtPasswordKeyPressed
 
     private void txtUsernameKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtUsernameKeyPressed
         // TODO add your handling code here:
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-        login(); // Sama seperti klik tombol login
+        login();
         }
     }//GEN-LAST:event_txtUsernameKeyPressed
 
