@@ -5,7 +5,6 @@ import com.github.sarxos.webcam.WebcamPanel;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.common.HybridBinarizer;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -14,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 public class ScannerDialog extends JDialog {
 
@@ -85,6 +85,7 @@ public class ScannerDialog extends JDialog {
                                 isWebcamRunning = false;
                                 webcam.close();
                                 SwingUtilities.invokeLater(() -> prosesAbsensi(hasilScan, "Absensi"));
+
                             } else if (isValidKodeBuku(hasilScan)) {
                                 isWebcamRunning = false;
                                 webcam.close();
@@ -95,8 +96,8 @@ public class ScannerDialog extends JDialog {
                                         PreparedStatement stmt = conn.prepareStatement(sql);
                                         ResultSet rs = stmt.executeQuery();
 
-                                        java.util.List<String> daftarNIM = new java.util.ArrayList<>();
-                                        java.util.Map<String, String> nimKeNama = new java.util.HashMap<>();
+                                        java.util.List<String> daftarNIM = new ArrayList<>();
+                                        java.util.Map<String, String> nimKeNama = new HashMap<>();
 
                                         while (rs.next()) {
                                             String nim = rs.getString("nim");
@@ -111,7 +112,6 @@ public class ScannerDialog extends JDialog {
                                         }
 
                                         String selectedNIM;
-
                                         if (daftarNIM.size() == 1) {
                                             selectedNIM = daftarNIM.get(0);
                                         } else {
@@ -144,7 +144,9 @@ public class ScannerDialog extends JDialog {
                                         showCooldownPopup("❌ Terjadi kesalahan saat mengambil NIM dari aktivitas.");
                                     }
                                 });
+
                             } else {
+                                // Tidak valid → lanjut scan
                                 showCooldownPopup("❌ Barcode tidak dikenali sebagai NIM atau kode buku.");
                             }
                         }
@@ -175,7 +177,16 @@ public class ScannerDialog extends JDialog {
         long now = System.currentTimeMillis();
         if (now - lastInvalidPopupTime > POPUP_COOLDOWN_MS) {
             lastInvalidPopupTime = now;
-            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, message));
+            SwingUtilities.invokeLater(() -> {
+                JOptionPane.showMessageDialog(this, message);
+
+                // Tambahkan delay 3 detik setelah message ditutup
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(3000); // delay 3 detik
+                    } catch (InterruptedException ignored) {}
+                }).start();
+            });
         }
     }
 
@@ -251,16 +262,13 @@ public class ScannerDialog extends JDialog {
                 }
             }
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Container parent = getParent();
-                    if (parent instanceof DashboardFrame) {
-                        DashboardFrame dashboard = (DashboardFrame) parent;
-                        dashboard.refreshAktivitasPanel();
-                    }
-                    dispose();
+            SwingUtilities.invokeLater(() -> {
+                Container parent = getParent();
+                if (parent instanceof DashboardFrame) {
+                    DashboardFrame dashboard = (DashboardFrame) parent;
+                    dashboard.refreshAktivitasPanel();
                 }
+                dispose();
             });
 
         } catch (Exception ex) {
@@ -341,30 +349,27 @@ public class ScannerDialog extends JDialog {
                 JOptionPane.showMessageDialog(this, "✅ Buku dipinjamkan ke " + nim + " - " + nama);
             }
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Container parent = getParent();
-                    if (parent instanceof DashboardFrame) {
-                        DashboardFrame dashboard = (DashboardFrame) parent;
-                        dashboard.tampilkanPanelPinjam();
-                        if (dashboard.getPinjamPanel() != null) {
-                            dashboard.getPinjamPanel().loadData("");
-                        }
-                        if (dashboard.getManajemenBukuPanel() != null) {
-                            dashboard.getManajemenBukuPanel().loadDataBuku();
-                            dashboard.getManajemenBukuPanel().tampilkanTotalBuku();
-                        }
+            SwingUtilities.invokeLater(() -> {
+                Container parent = getParent();
+                if (parent instanceof DashboardFrame) {
+                    DashboardFrame dashboard = (DashboardFrame) parent;
+                    dashboard.tampilkanPanelPinjam();
+                    if (dashboard.getPinjamPanel() != null) {
+                        dashboard.getPinjamPanel().loadData("");
                     }
-                    dispose();
+                    if (dashboard.getManajemenBukuPanel() != null) {
+                        dashboard.getManajemenBukuPanel().loadDataBuku();
+                        dashboard.getManajemenBukuPanel().tampilkanTotalBuku();
+                    }
                 }
+                dispose();
             });
 
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "❌ Gagal memproses peminjaman.");
         }
-    }   
+    }
 
     @Override
     public void dispose() {

@@ -169,7 +169,8 @@ public class ManajemenBukuPanel extends JPanel {
         int modelRow = tabelBuku.convertRowIndexToModel(selectedRow);
         DefaultTableModel model = (DefaultTableModel) tabelBuku.getModel();
 
-        String kode = model.getValueAt(modelRow, 1).toString();
+        String kodeLama = model.getValueAt(modelRow, 1).toString();
+        JTextField tfKode = new JTextField(kodeLama);
         JTextField tfJudul = new JTextField(model.getValueAt(modelRow, 2).toString());
         JTextField tfPenulis = new JTextField(model.getValueAt(modelRow, 3).toString());
         JTextField tfPenerbit = new JTextField(model.getValueAt(modelRow, 4).toString());
@@ -178,6 +179,8 @@ public class ManajemenBukuPanel extends JPanel {
         JTextField tfStock = new JTextField(model.getValueAt(modelRow, 7).toString());
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.add(new JLabel("Kode Buku:"));
+        panel.add(tfKode);
         panel.add(new JLabel("Judul:"));
         panel.add(tfJudul);
         panel.add(new JLabel("Penulis:"));
@@ -202,21 +205,22 @@ public class ManajemenBukuPanel extends JPanel {
                 int stock = Integer.parseInt(tfStock.getText().trim());
 
                 try (Connection conn = DBConnection.connect()) {
-                    String sql = "UPDATE buku SET judul_buku=?, penulis=?, penerbit=?, tahun_terbit=?, kategori=?, stock=? WHERE kode_buku=?";
+                    String sql = "UPDATE buku SET kode_buku=?, judul_buku=?, penulis=?, penerbit=?, tahun_terbit=?, kategori=?, stock=? WHERE kode_buku=?";
                     PreparedStatement stmt = conn.prepareStatement(sql);
-                    stmt.setString(1, tfJudul.getText().trim());
-                    stmt.setString(2, tfPenulis.getText().trim());
-                    stmt.setString(3, tfPenerbit.getText().trim());
-                    stmt.setInt(4, tahun);
-                    stmt.setString(5, tfKategori.getText().trim());
-                    stmt.setInt(6, stock);
-                    stmt.setString(7, kode);
+                    stmt.setString(1, tfKode.getText().trim());
+                    stmt.setString(2, tfJudul.getText().trim());
+                    stmt.setString(3, tfPenulis.getText().trim());
+                    stmt.setString(4, tfPenerbit.getText().trim());
+                    stmt.setInt(5, tahun);
+                    stmt.setString(6, tfKategori.getText().trim());
+                    stmt.setInt(7, stock);
+                    stmt.setString(8, kodeLama); // gunakan kode lama untuk WHERE
 
                     stmt.executeUpdate();
                     JOptionPane.showMessageDialog(this, "Data berhasil diupdate!");
                     loadDataBuku();
                     tampilkanTotalBuku();
-                    return; // keluar dari loop
+                    return;
                 }
 
             } catch (NumberFormatException e) {
